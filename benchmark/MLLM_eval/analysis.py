@@ -5,8 +5,7 @@ from collections import defaultdict
 
 # Configure input paths here
 EVAL_RESULTS_PATH = (
-    "/cfs/cfs-kuxuxpyv/yusenfu/eval_results/results_with_mb/"
-    "eval_results_qwen-2511-gdpo-rank64-add2k5-6ref-csd-flat-sigmoid0.65-gamma5-paper-20epoch.jsonl"
+    "/path/to/your/eval_results.jsonl"
 )
 
 DIMENSIONS = [

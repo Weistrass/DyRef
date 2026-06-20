@@ -1,10 +1,30 @@
-# Requirements for MLLM Evaluation module
-# Other modules (Grounded-SAM-2, CSD, AlphaPose) require their own conda environments.
-# Please follow the installation guides in README.md.
+# Requirements for the data construction pipeline (data_construct/) and
+# MLLM evaluation (MLLM_eval/). These run in a simple base environment.
+#
+# NOTE: The three objective-metric modules (Grounded-SAM-2_patch, CSD_patch,
+# AlphaPose_patch) require their own dedicated conda environments. Please follow
+# the installation guides for the corresponding official repositories (see README).
 
 openai
+python-dotenv
 tqdm
 numpy
 Pillow
-scikit-image
+requests
 opencv-python
+scikit-image
+
+# Prompt generation / processing (NLP helpers)
+nltk
+spacy
+sentence-transformers
+
+# Seedream / ARK image generation API (Volcengine, commercial service)
+volcengine-python-sdk
+
+# NOTE on data construction:
+# `data_construct/gen_image/subject_transfer.py` and `background_extract.py`
+# depend on an INTERNAL proprietary API (`venus_api_base` / venus.oa.com AIGC
+# service) that is NOT publicly available. To reproduce subject-reference
+# generation with public tools, replace the PyVenusOpenApi calls with an
+# equivalent image-editing model/API of your choice.

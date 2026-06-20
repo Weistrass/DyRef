@@ -45,11 +45,7 @@ input_group.add_argument('--pair_list', nargs='+',
 
 # 模型参数
 parser.add_argument('-mp', '--model_path', type=str,
-                    default=(
-                        "/cfs/cfs-kuxuxpyv/yusenfu/.cache/huggingface/hub/"
-                        "models--tomg-group-umd--CSD-ViT-L/snapshots/"
-                        "5bc26a6fb0487f3f00a2a7313135103a005b1b67/pytorch_model.bin"
-                    ),
+                    default="/path/to/your/CSD/pretrainedmodels/pytorch_model.bin",
                     help='CSD模型权重路径')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='vit_large',
                     help='model architecture')

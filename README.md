@@ -1,4 +1,4 @@
-# DyRef: Dynamic Multi-Reference Image Generation via Two-Stage Training
+# Scaling Multi-Reference Image Generation with Dynamic Reward Optimization
 
 <!-- [Paper]() | [Project Page]() | [Model Weights]() | [Dataset]() -->
 
@@ -113,7 +113,7 @@ For detailed evaluation instructions, see [benchmark/README.md](benchmark/README
 | Qwen-Image-Edit-2511 | ✓ | ✓ |
 | Flux-Klein-base-9B | ✓ | ✓ |
 
-## Citation
+<!-- ## Citation
 
 ```bibtex
 @article{dyref2025,
@@ -122,7 +122,7 @@ For detailed evaluation instructions, see [benchmark/README.md](benchmark/README
   journal={},
   year={2025}
 }
-```
+``` -->
 
 ## Acknowledgements
 

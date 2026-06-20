@@ -1,0 +1,92 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flow-factory"
+version = "0.1.0"
+description = "Unified RL Fine-tuning Framework for Diffusion/Flow-Matching Models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Flow-Factory Team"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Core
+dependencies = [
+    # Deep Learning Core
+    "torch>=2.6.0",
+    "torchvision>=0.19.0",
+    "torchaudio>=2.4.0",
+    
+    # Hugging Face Ecosystem
+    "transformers>=4.57.1",
+    "diffusers>=0.36.0",
+    "accelerate>=1.11.0",
+    "peft>=0.17.0",
+    "datasets>=3.3.2",
+    "tokenizers>=0.22.1",
+    "huggingface-hub>=0.35.3",
+
+    # Critical for T5/Flux
+    "protobuf>=6.33.2",
+    "sentencepiece>=0.2.1",
+
+    # Basic Utils
+    "imageio[ffmpeg]>=2.37.2",
+    "numpy>=1.26.4",
+    "pillow>=10.4.0",
+    "einops>=0.8.0",
+    "pydantic>=2.8.0",
+    "pyyaml>=6.0",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+# DeepSpeed (ZeRO optimization)
+deepspeed = [
+    "deepspeed==0.15.4",
+]
+
+# Quantization (8-bit/4-bit)
+quantization = [
+    "bitsandbytes>=0.45.3",
+]
+
+# Experiment tracking
+wandb = [ "wandb" ]
+swanlab = [ "swanlab" ]
+
+nvidia = [
+    "xformers>=0.0.27",
+    "nvidia-ml-py",
+]
+
+all = [
+    "flow-factory[deepspeed,quantization]",
+]
+
+[project.scripts]
+flow-factory-train = "flow_factory.cli:train_cli"
+ff-train = "flow_factory.cli:train_cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100

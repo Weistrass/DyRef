@@ -1,0 +1,137 @@
+# Environment Configuration
+launcher: "accelerate"  # Options: accelerate
+config_file: config/deepspeed/deepspeed_zero2.yaml
+num_processes: 8  # Number of processes to launch (overrides config file)
+main_process_port: 29500
+mixed_precision: "bf16"  # Options: no, fp16, bf16
+
+run_name: "flux2-klein-gdpo-rank32-add2k5-6ref-csd-siglipv2_flat_sigmoid0.65-focal_loss_gamma2"
+project: "Flow-Factory"  # Project name for logging
+logging_backend: "swanlab"  # Options: wandb, swanlab, none
+
+
+# Data Configuration
+data:
+  dataset_dir: "/path/to/your/train_add_2k5_6ref"  # Path to dataset folder
+  image_dir: "/path/to/your/datasets"
+  preprocessing_batch_size: 8  # Batch size for preprocessing
+  dataloader_num_workers: 8  # Number of workers for DataLoader
+  enable_preprocess: true  # Enable dataset preprocessing
+  force_reprocess: false  # Force reprocessing of the dataset
+  cache_dir: "/path/to/your/.cache/flow_factory/flux2-klein-gdpo" # Cache directory for preprocessed datasets
+  max_dataset_size: 12320  # Limit the maximum number of samples in the dataset
+
+
+# Model Configuration
+model:
+  finetune_type: 'lora' # Options: full, lora
+  lora_rank : 32
+  lora_alpha : 32
+  target_modules: ["to_q","to_k","to_v","add_q_proj","add_k_proj","add_v_proj","to_out.0","to_add_out","img_mlp.net.2","img_mod.1","txt_mlp.net.2","txt_mod.1"]
+  model_name_or_path: "/path/to/your/FLUX.2-klein-base-9B"  # FLUX.2-klein-base-9B model path
+  zero_cond_t: true
+  model_type: "flux2-klein"
+  resume_path: "/path/to/your/sft_lora_checkpoint_d2p"  # Path to load SFT LoRA checkpoint (converted to PEFT format)
+  resume_training_state: false
+
+log:
+  save_dir: "/path/to/your/output_dir"  # Directory to save model checkpoints and logs
+  save_freq: 10  # Save frequency in epochs (0 to disable)
+  save_model_only: true  # Save only the model weights (not optimizer, scheduler, etc.)
+
+# Training Configuration
+train:
+  trainer_type: 'gdpo'
+  enable_gradient_checkpointing: True
+
+  # Image settings
+  resolution: 512  # Can be int or [height, width]
+  auto_resize: true
+  condition_image_size: [512, 512]
+  
+  # Batch and sampling
+  per_device_batch_size: 1
+  group_size: 24  # Group size for GRPO sampling
+  global_std: false
+  unique_sample_num_per_epoch: 24
+  gradient_step_per_epoch: 2
+  
+  # Clipping
+  clip_range: 1.0e-4
+  adv_clip_range: 5.0
+  max_grad_norm: 1.0
+  
+  # KL div
+  kl_type: 'v-based' # Options: 'x-based', 'v-based'
+  kl_beta: 0.04
+  ref_param_device: 'same_as_model' # Options: cpu, same_as_model
+
+  # Denoising process
+  num_inference_steps: 10
+  guidance_scale: 4
+  
+  # Optimization
+  seed: 42
+  learning_rate: 3.0e-4
+  adam_weight_decay: 1.0e-4
+  adam_betas: [0.9, 0.999]
+  adam_epsilon: 1.0e-8
+
+  # EMA
+  ema_decay: 0.9
+  ema_update_interval: 4
+
+  # Focal loss
+  is_focal_loss: true
+
+# Scheduler Configuration
+scheduler:
+  dynamics_type: "Flow-SDE"  # Options: Flow-SDE, Dance-SDE, CPS, ODE
+  noise_level: 1.0
+  num_train_steps: 1
+  train_steps: [1, 2, 3]
+  seed: 42
+
+# Evaluation settings
+eval:
+  resolution: 512
+  condition_image_size: [512, 512]
+  auto_resize: True
+  guidance_scale: 4
+  num_inference_steps: 20
+  per_device_batch_size: 1
+  seed: 1
+  eval_freq: 10
+
+# Reward Model Configuration
+rewards:
+  - name: "csd_score"
+    reward_model: "csd_score"
+    weight: 0.8
+    batch_size: 16
+    device: "cuda"
+    dtype: bfloat16
+    extra_kwargs:
+      model_path: "/path/to/your/CSD/pretrainedmodels/pytorch_model.bin"
+      dataset_dir: "/path/to/your/train_add_2k5_6ref"
+      arch: "vit_large"
+      content_proj_head: "default"
+      reduce: "mean"
+  - name: "image_similarity"
+    reward_model: "image_similarity"
+    weight: 1.0
+    batch_size: 16
+    device: "cuda"
+    dtype: bfloat16
+    extra_kwargs:
+      similarity_type: "siglip"  # options: clip | dinov2 | clip+dinov2 | siglip | qwenvl
+      dinov2_model_name_or_path: "/path/to/your/facebook/dinov2-base"
+      model_name_or_path: "/path/to/your/openai/clip-vit-large-patch14"
+      siglip_model_name_or_path: "/path/to/your/siglip2-base-patch16-384"
+      qwenvl_model_name_or_path: "/path/to/your/Qwen3-VL-4B-Instruct"
+      reduce: "mean"
+      siglip_similarity_mode: "flat"
+      dataset_dir: "/path/to/your/train_add_2k5_6ref"
+      tau: 0.65
+      is_inter_group_dis: true
+      k_mode: "increase"

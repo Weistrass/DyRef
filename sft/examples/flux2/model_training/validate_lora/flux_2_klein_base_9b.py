@@ -1,0 +1,26 @@
+import torch
+
+from diffsynth.pipelines.flux2_image import Flux2ImagePipeline, ModelConfig
+
+pipe = Flux2ImagePipeline.from_pretrained(
+    torch_dtype=torch.bfloat16,
+    device="cuda",
+    model_configs=[
+        ModelConfig(
+            model_id="black-forest-labs/FLUX.2-klein-9B",
+            origin_file_pattern="text_encoder/*.safetensors"),
+        ModelConfig(
+            model_id="black-forest-labs/FLUX.2-klein-base-9B",
+            origin_file_pattern="transformer/*.safetensors"),
+        ModelConfig(
+            model_id="black-forest-labs/FLUX.2-klein-9B",
+            origin_file_pattern="vae/diffusion_pytorch_model.safetensors"),
+    ],
+    tokenizer_config=ModelConfig(
+        model_id="black-forest-labs/FLUX.2-klein-9B",
+        origin_file_pattern="tokenizer/"),
+)
+pipe.load_lora(pipe.dit, "./models/train/FLUX.2-klein-base-9B_lora/epoch-4.safetensors")
+PROMPT = "a dog"
+image = pipe(prompt=PROMPT, seed=0, num_inference_steps=40, cfg_scale=4, height=768, width=768)
+image.save("image.jpg")

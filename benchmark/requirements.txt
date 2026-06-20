@@ -1,0 +1,10 @@
+# Requirements for MLLM Evaluation module
+# Other modules (Grounded-SAM-2, CSD, AlphaPose) require their own conda environments.
+# Please follow the installation guides in README.md.
+
+openai
+tqdm
+numpy
+Pillow
+scikit-image
+opencv-python

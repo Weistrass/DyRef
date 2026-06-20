@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights and checkpoints
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+lora_checkpoints/
+checkpoints/
+
+# Data (large files)
+*.tar
+*.tar.gz
+*.zip
+
+# Logs
+wandb/
+swanlab/
+logs/
+*.log
+
+# Cache
+.cache/
+__pycache__/
+
+# Environment files with secrets
+.env
+*.env
+
+# Temporary files
+tmp/
+temp/

@@ -1,0 +1,103 @@
+# Example configuration for training SD3.5 with ImageReward
+# This config demonstrates using ImageReward as the primary reward model
+#
+# Usage:
+#   accelerate launch --config_file config/accelerate_configs/multi_gpu.yaml \
+#     --num_processes=8 \
+#     src/flow_factory/train.py \
+#     --config examples/grpo/lora/sd3_5_imagereward.yaml
+
+# ================== Model Configuration ==================
+model:
+  model_name: "sd3_5"
+  pretrained_model_name_or_path: "stabilityai/stable-diffusion-3.5-medium"
+  cache_dir: null
+  use_lora: true
+  lora_rank: 128
+  lora_alpha: 128
+  lora_target_modules: ["to_k", "to_q", "to_v", "to_out.0"]
+
+# ================== Data Configuration ==================
+data:
+  dataset_name: "pickscore"
+  batch_size: 1
+  num_workers: 4
+  group_size: 4
+  max_prompt_length: 512
+
+  train_data_path: "dataset/pickscore_sfw/train.txt"
+  eval_data_path: "dataset/pickscore_sfw/test.txt"
+
+# ================== Training Algorithm ==================
+training:
+  algorithm: "grpo"
+  output_dir: "outputs/sd3_5_imagereward"
+  
+  num_train_epochs: 3
+  max_steps: -1
+  
+  learning_rate: 1.0e-5
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  
+  grpo:
+    beta: 0.1
+    clip_range: 1.0e-4
+    gamma: 1.0
+    advantage_normalization: true
+    whiten_rewards: true
+    reference_mode: "frozen"
+  
+  save_strategy: "epoch"
+  save_total_limit: 3
+  save_steps: 500
+  
+  eval_strategy: "epoch"
+  eval_steps: 500
+  per_device_eval_batch_size: 1
+  
+  logging_steps: 10
+  report_to: ["wandb"]
+  
+  gradient_accumulation_steps: 4
+  gradient_checkpointing: true
+  mixed_precision: "bf16"
+  
+  ddp_find_unused_parameters: false
+
+# ================== Reward Models ==================
+rewards:
+  - name: "imagereward"
+    reward_model: "ImageReward"
+    weight: 1.0
+    batch_size: 8
+    device: "cuda"
+    dtype: "float32"
+
+# ================== Inference/Sampling Configuration ==================
+scheduler:
+  scheduler_name: "flow_match_euler_discrete"
+  num_inference_steps: 28
+  guidance_scale: 3.5
+  max_sequence_length: 512
+
+# ================== Logging Configuration ==================
+logging:
+  wandb_project: "flow-factory"
+  wandb_run_name: "sd3_5-imagereward"
+  wandb_tags: ["sd3_5", "grpo", "imagereward"]
+  
+  log_images: true
+  log_images_steps: 100
+  num_log_images: 4
+
+# ================== System Configuration ==================
+system:
+  seed: 42
+  num_workers: 4
+  dataloader_pin_memory: true
+  torch_compile: false
+  torch_compile_mode: "default"

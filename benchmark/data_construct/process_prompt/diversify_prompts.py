@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 os.environ['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY', '')
-client = OpenAI(base_url="http://v2.open.venus.oa.com/llmproxy")
+client = OpenAI(base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"))
 
 MODEL = "gemini-3-flash"
 

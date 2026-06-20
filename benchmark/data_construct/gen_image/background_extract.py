@@ -244,7 +244,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--openai-api-key", default=os.environ.get("OPENAI_API_KEY"), help="OpenAI API key.")
     parser.add_argument(
         "--openai-base-url",
-        default=os.environ.get("OPENAI_BASE_URL", "http://v2.open.venus.oa.com/llmproxy"),
+        default=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         help="OpenAI-compatible base URL.",
     )
     parser.add_argument("--venus-ak", default=os.environ.get("VENUS_AK"), help="Venus API access key.")

@@ -352,7 +352,7 @@ def example_usage():
     """使用示例"""
     evaluator = PoseConsistencyEvaluator()
 
-    root_dir = Path('/cfs/cfs-kuxuxpyv/yusenfu/data_construct/data_4500/3_subjects/')
+    root_dir = Path('/path/to/your/data_construct/3_subjects/')
     results = []
     index = []
     for prompt_dir in tqdm(root_dir.iterdir()):

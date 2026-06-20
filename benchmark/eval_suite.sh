@@ -6,7 +6,7 @@ CONDA_PATH=$(conda info --base)
 source "$CONDA_PATH/etc/profile.d/conda.sh"
 
 # --- 配置区域 ---
-IMG_DIR=${1:-"/cfs/cfs-kuxuxpyv/yusenfu/benchmark_results/save_img_multirefplus/qwen-edit-2511-lora-rank32-epoch3-stage2/infer_step20"}
+IMG_DIR=${1:-"/path/to/your/generated_images"}
 DEFAULT_OUTPUT_PATH="$(dirname "$IMG_DIR")/output"
 OUTPUT_PATH=${2:-$DEFAULT_OUTPUT_PATH}
 TEST_SET_PATH=${3:-""}

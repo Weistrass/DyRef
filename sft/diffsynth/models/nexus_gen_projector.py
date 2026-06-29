@@ -1,10 +1,8 @@
-# pylint: disable=invalid-name
-
 import math
-from typing import Optional, Tuple
-
 import torch
 import torch.nn as nn
+from typing import Optional, Tuple
+
 
 
 def rotate_half(x):
@@ -40,13 +38,13 @@ class Qwen2_5_VLRotaryEmbedding(nn.Module):
         self.original_max_seq_len = config.max_position_embeddings
 
         self.config = config
-        from transformers.modeling_rope_utils import \
-            _compute_default_rope_parameters
+        from transformers.modeling_rope_utils import _compute_default_rope_parameters
         self.rope_init_fn = _compute_default_rope_parameters
 
         inv_freq, self.attention_scaling = self.rope_init_fn(self.config, device)
         self.register_buffer("inv_freq", inv_freq, persistent=False)
         self.original_inv_freq = self.inv_freq
+
 
     def _dynamic_frequency_update(self, position_ids, device):
         """
@@ -65,6 +63,7 @@ class Qwen2_5_VLRotaryEmbedding(nn.Module):
         if seq_len < self.original_max_seq_len and self.max_seq_len_cached > self.original_max_seq_len:  # reset
             self.register_buffer("inv_freq", self.original_inv_freq, persistent=False)
             self.max_seq_len_cached = self.original_max_seq_len
+
 
     @torch.no_grad()
     def forward(self, x, position_ids):
@@ -127,6 +126,7 @@ class Qwen2_5_VLAttention(nn.Module):
         self.k_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=True)
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=True)
         self.o_proj = nn.Linear(self.num_heads * self.head_dim, self.hidden_size, bias=False)
+
 
     def forward(
         self,
@@ -285,9 +285,9 @@ class NexusGenImageEmbeddingMerger(nn.Module):
             "rms_norm_eps": 1e-06,
             "rope_scaling": {
                 "mrope_section": [
-                    16,
-                    24,
-                    24
+                16,
+                24,
+                24
                 ],
                 "rope_type": "default",
                 "type": "default"
@@ -348,13 +348,8 @@ class NexusGenImageEmbeddingMerger(nn.Module):
         expanded_range = range_tensor.expand(-1, llm_grid_h * llm_grid_w)
         time_tensor = expanded_range * self.config.vision_config.tokens_per_second
         t_index = time_tensor.long().flatten().to(image_grid_thw.device)
-        h_index = (
-            torch.arange(llm_grid_h).view(1, -1, 1)
-            .expand(llm_grid_t, -1, llm_grid_w)
-            .flatten().to(image_grid_thw.device) * scale_h
-        )
-        w_index = torch.arange(llm_grid_w).view(1, 1, -1).expand(llm_grid_t, llm_grid_h, - \
-                                                                 1).flatten().to(image_grid_thw.device) * scale_w
+        h_index = torch.arange(llm_grid_h).view(1, -1, 1).expand(llm_grid_t, -1, llm_grid_w).flatten().to(image_grid_thw.device) * scale_h
+        w_index = torch.arange(llm_grid_w).view(1, 1, -1).expand(llm_grid_t, llm_grid_h, -1).flatten().to(image_grid_thw.device) * scale_w
         # 3, B, L
         position_ids = torch.stack([t_index, h_index, w_index]).unsqueeze(0).repeat(batch_size, 1, 1).permute(1, 0, 2)
         return position_ids
@@ -385,13 +380,9 @@ class NexusGenMergerStateDictConverter:
 
     def from_diffusers(self, state_dict):
         return state_dict
-
+    
     def from_civitai(self, state_dict):
-        merger_state_dict = {
-            key.replace(
-                "embedding_merger.",
-                ""): value for key,
-            value in state_dict.items() if key.startswith('embedding_merger.')}
+        merger_state_dict = {key.replace("embedding_merger.", ""): value for key, value in state_dict.items() if key.startswith('embedding_merger.')}
         return merger_state_dict
 
 
@@ -399,7 +390,6 @@ class NexusGenAdapter(nn.Module):
     """
     Adapter for Nexus-Gen generation decoder.
     """
-
     def __init__(self, input_dim=3584, output_dim=4096):
         super(NexusGenAdapter, self).__init__()
         self.adapter = nn.Sequential(nn.Linear(input_dim, output_dim),
@@ -421,7 +411,7 @@ class NexusGenAdapterStateDictConverter:
 
     def from_diffusers(self, state_dict):
         return state_dict
-
+    
     def from_civitai(self, state_dict):
         adapter_state_dict = {key: value for key, value in state_dict.items() if key.startswith('adapter.')}
         return adapter_state_dict

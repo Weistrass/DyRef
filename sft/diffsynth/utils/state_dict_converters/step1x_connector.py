@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def Qwen2ConnectorStateDictConverter(state_dict):
     state_dict_ = {}
     for name in state_dict:

@@ -1,6 +1,4 @@
 import torch
-
-from ..core.gradient import gradient_checkpoint_forward
 from .wan_video_dit import DiTBlock
 
 
@@ -63,14 +61,27 @@ class VaceWanModel(torch.nn.Module):
             torch.cat([u, u.new_zeros(1, x.shape[1] - u.size(1), u.size(2))],
                       dim=1) for u in c
         ])
-
+        
+        def create_custom_forward(module):
+            def custom_forward(*inputs):
+                return module(*inputs)
+            return custom_forward
+        
         for block in self.vace_blocks:
-            c = gradient_checkpoint_forward(
-                block,
-                use_gradient_checkpointing,
-                use_gradient_checkpointing_offload,
-                c, x, context, t_mod, freqs
-            )
-
+            if use_gradient_checkpointing_offload:
+                with torch.autograd.graph.save_on_cpu():
+                    c = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(block),
+                        c, x, context, t_mod, freqs,
+                        use_reentrant=False,
+                    )
+            elif use_gradient_checkpointing:
+                c = torch.utils.checkpoint.checkpoint(
+                    create_custom_forward(block),
+                    c, x, context, t_mod, freqs,
+                    use_reentrant=False,
+                )
+            else:
+                c = block(c, x, context, t_mod, freqs)
         hints = torch.unbind(c)[:-1]
         return hints

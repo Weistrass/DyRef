@@ -1,15 +1,12 @@
-import einops
 import torch
+from .wan_video_dit import DiTBlock, SelfAttention, rope_apply, flash_attention, modulate, MLP
+import einops
 import torch.nn as nn
-
-from .wan_video_dit import (MLP, DiTBlock, SelfAttention, flash_attention,
-                            modulate, rope_apply)
 
 
 class MotSelfAttention(SelfAttention):
     def __init__(self, dim: int, num_heads: int, eps: float = 1e-6):
         super().__init__(dim, num_heads, eps)
-
     def forward(self, x, freqs, is_before_attn=False):
         if is_before_attn:
             q = self.norm_q(self.q(x))
@@ -29,18 +26,16 @@ class MotWanAttentionBlock(DiTBlock):
 
         self.self_attn = MotSelfAttention(dim, num_heads, eps)
 
+
     def forward(self, wan_block, x, context, t_mod, freqs, x_mot, context_mot, t_mod_mot, freqs_mot):
 
         # 1. prepare scale parameter
         shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = (
             wan_block.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(6, dim=1)
-
+        
         scale_params_mot_ref = self.modulation + t_mod_mot.float()
         scale_params_mot_ref = einops.rearrange(scale_params_mot_ref, '(b n) t c -> b n t c', n=1)
-        (
-            shift_msa_mot_ref, scale_msa_mot_ref, gate_msa_mot_ref,
-            c_shift_msa_mot_ref, c_scale_msa_mot_ref, c_gate_msa_mot_ref,
-        ) = scale_params_mot_ref.chunk(6, dim=2)
+        shift_msa_mot_ref, scale_msa_mot_ref, gate_msa_mot_ref, c_shift_msa_mot_ref, c_scale_msa_mot_ref, c_gate_msa_mot_ref = scale_params_mot_ref.chunk(6, dim=2)
 
         # 2. Self-attention
         input_x = modulate(wan_block.norm1(x), shift_msa, scale_msa)
@@ -56,20 +51,20 @@ class MotWanAttentionBlock(DiTBlock):
         norm_x_mot = einops.rearrange(self.norm1(x_mot.float()), 'b (n t) c -> b n t c', n=1)
         norm_x_mot = modulate(norm_x_mot, shift_msa_mot_ref, scale_msa_mot_ref).type_as(x_mot)
         norm_x_mot = einops.rearrange(norm_x_mot, 'b n t c -> b (n t) c', n=1)
-        q_mot, k_mot, v_mot = self.self_attn(norm_x_mot, freqs_mot, is_before_attn=True)
+        q_mot,k_mot,v_mot = self.self_attn(norm_x_mot, freqs_mot, is_before_attn=True)
 
         tmp_hidden_states = flash_attention(
-            torch.cat([q, q_mot], dim=-2), 
-            torch.cat([k, k_mot], dim=-2), 
-            torch.cat([v, v_mot], dim=-2), 
+            torch.cat([q, q_mot], dim=-2),
+            torch.cat([k, k_mot], dim=-2),
+            torch.cat([v, v_mot], dim=-2),
             num_heads=attn1.num_heads)
 
         attn_output, attn_output_mot = torch.split(tmp_hidden_states, [q.shape[-2], q_mot.shape[-2]], dim=-2)
-
+        
         attn_output = attn1.o(attn_output)
         x = wan_block.gate(x, gate_msa, attn_output)
 
-        attn_output_mot = self.self_attn(x=attn_output_mot, freqs=freqs_mot, is_before_attn=False)
+        attn_output_mot = self.self_attn(x=attn_output_mot,freqs=freqs_mot, is_before_attn=False)
         # gate
         attn_output_mot = einops.rearrange(attn_output_mot, 'b (n t) c -> b n t c', n=1)
         attn_output_mot = attn_output_mot * gate_msa_mot_ref
@@ -81,7 +76,7 @@ class MotWanAttentionBlock(DiTBlock):
         input_x = modulate(wan_block.norm2(x), shift_mlp, scale_mlp)
         x = wan_block.gate(x, gate_mlp, wan_block.ffn(input_x))
 
-        x_mot = x_mot + self.cross_attn(self.norm3(x_mot), context_mot)
+        x_mot = x_mot + self.cross_attn(self.norm3(x_mot),context_mot)
         # modulate
         norm_x_mot_ref = einops.rearrange(self.norm2(x_mot.float()), 'b (n t) c -> b n t c', n=1)
         norm_x_mot_ref = (norm_x_mot_ref * (1 + c_scale_msa_mot_ref) + c_shift_msa_mot_ref).type_as(x_mot)
@@ -98,18 +93,18 @@ class MotWanAttentionBlock(DiTBlock):
 
 class MotWanModel(torch.nn.Module):
     def __init__(
-        self, 
-        mot_layers=(0, 4, 8, 12, 16, 20, 24, 28, 32, 36), 
-        patch_size=(1, 2, 2), 
-        has_image_input=True, 
-        has_image_pos_emb=False, 
-        dim=5120, 
-        num_heads=40, 
-        ffn_dim=13824, 
-        freq_dim=256, 
-        text_dim=4096, 
-        in_dim=36, 
-        eps=1e-6, 
+        self,
+        mot_layers=(0, 4, 8, 12, 16, 20, 24, 28, 32, 36),
+        patch_size=(1, 2, 2),
+        has_image_input=True,
+        has_image_pos_emb=False,
+        dim=5120,
+        num_heads=40,
+        ffn_dim=13824,
+        freq_dim=256,
+        text_dim=4096,
+        in_dim=36,
+        eps=1e-6,
     ):
         super().__init__()
         self.mot_layers = mot_layers
@@ -123,13 +118,13 @@ class MotWanModel(torch.nn.Module):
             in_dim, dim, kernel_size=patch_size, stride=patch_size)
 
         self.text_embedding = nn.Sequential(
-            nn.Linear(text_dim, dim), 
-            nn.GELU(approximate='tanh'), 
+            nn.Linear(text_dim, dim),
+            nn.GELU(approximate='tanh'),
             nn.Linear(dim, dim)
         )
         self.time_embedding = nn.Sequential(
-            nn.Linear(freq_dim, dim), 
-            nn.SiLU(), 
+            nn.Linear(freq_dim, dim),
+            nn.SiLU(),
             nn.Linear(dim, dim)
         )
         self.time_projection = nn.Sequential(
@@ -142,6 +137,7 @@ class MotWanModel(torch.nn.Module):
             MotWanAttentionBlock(has_image_input, dim, num_heads, ffn_dim, eps, block_id=i)
             for i in self.mot_layers
         ])
+    
 
     def patchify(self, x: torch.Tensor):
         x = self.patch_embedding(x)
@@ -151,7 +147,7 @@ class MotWanModel(torch.nn.Module):
         def precompute_freqs_cis(dim: int, start: int = 0, end: int = 1024, theta: float = 10000.0):
             # 1d rope precompute
             freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)
-                                     [: (dim // 2)].double() / dim))
+                        [: (dim // 2)].double() / dim))
             freqs = torch.outer(torch.arange(start, end, device=freqs.device), freqs)
             freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
             return freqs_cis
@@ -161,8 +157,8 @@ class MotWanModel(torch.nn.Module):
         w_freqs_cis = precompute_freqs_cis(self.head_dim // 3, 0, end, theta)
 
         freqs = torch.cat([
-            f_freqs_cis[:f].view(f, 1, 1, -1).expand(f, h, w, -1), 
-            h_freqs_cis[:h].view(1, h, 1, -1).expand(f, h, w, -1), 
+            f_freqs_cis[:f].view(f, 1, 1, -1).expand(f, h, w, -1),
+            h_freqs_cis[:h].view(1, h, 1, -1).expand(f, h, w, -1),
             w_freqs_cis[:w].view(1, 1, w, -1).expand(f, h, w, -1)
         ], dim=-1).reshape(f * h * w, 1, -1)
         return freqs

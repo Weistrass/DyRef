@@ -1,7 +1,3 @@
-# pylint: disable=invalid-name
-
-# pylint: disable=line-too-long
-
 def WanS2VAudioEncoderStateDictConverter(state_dict):
     rename_dict = {
         "model.wav2vec2.encoder.pos_conv_embed.conv.weight_g": "model.wav2vec2.encoder.pos_conv_embed.conv.parametrizations.weight.original0",

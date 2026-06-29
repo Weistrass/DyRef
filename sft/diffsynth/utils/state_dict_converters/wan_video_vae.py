@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def WanVideoVAEStateDictConverter(state_dict):
     state_dict_ = {}
     if 'model_state' in state_dict:

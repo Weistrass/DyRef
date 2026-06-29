@@ -1,11 +1,6 @@
-# pylint: disable=invalid-name
-
-# pylint: disable=line-too-long
-
 import torch
-from einops import rearrange
-
 from .attention import Attention
+from einops import rearrange
 
 
 def low_version_attention(query, key, value, attn_bias=None):
@@ -40,13 +35,7 @@ class Attention(torch.nn.Module):
         hidden_states = hidden_states + scale * ip_hidden_states
         return hidden_states
 
-    def torch_forward(
-            self,
-            hidden_states,
-            encoder_hidden_states=None,
-            attn_mask=None,
-            ipadapter_kwargs=None,
-            qkv_preprocessor=None):
+    def torch_forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None, ipadapter_kwargs=None, qkv_preprocessor=None):
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
 
@@ -72,7 +61,7 @@ class Attention(torch.nn.Module):
         hidden_states = self.to_out(hidden_states)
 
         return hidden_states
-
+    
     def xformers_forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None):
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
@@ -97,31 +86,17 @@ class Attention(torch.nn.Module):
 
         return hidden_states
 
-    def forward(
-            self,
-            hidden_states,
-            encoder_hidden_states=None,
-            attn_mask=None,
-            ipadapter_kwargs=None,
-            qkv_preprocessor=None):
-        return self.torch_forward(
-            hidden_states,
-            encoder_hidden_states=encoder_hidden_states,
-            attn_mask=attn_mask,
-            ipadapter_kwargs=ipadapter_kwargs,
-            qkv_preprocessor=qkv_preprocessor)
+    def forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None, ipadapter_kwargs=None, qkv_preprocessor=None):
+        return self.torch_forward(hidden_states, encoder_hidden_states=encoder_hidden_states, attn_mask=attn_mask, ipadapter_kwargs=ipadapter_kwargs, qkv_preprocessor=qkv_preprocessor)
+
+
+
 
 
 class CLIPEncoderLayer(torch.nn.Module):
     def __init__(self, embed_dim, intermediate_size, num_heads=12, head_dim=64, use_quick_gelu=True):
         super().__init__()
-        self.attn = Attention(
-            q_dim=embed_dim,
-            num_heads=num_heads,
-            head_dim=head_dim,
-            bias_q=True,
-            bias_kv=True,
-            bias_out=True)
+        self.attn = Attention(q_dim=embed_dim, num_heads=num_heads, head_dim=head_dim, bias_q=True, bias_kv=True, bias_out=True)
         self.layer_norm1 = torch.nn.LayerNorm(embed_dim)
         self.layer_norm2 = torch.nn.LayerNorm(embed_dim)
         self.fc1 = torch.nn.Linear(embed_dim, intermediate_size)
@@ -131,7 +106,7 @@ class CLIPEncoderLayer(torch.nn.Module):
 
     def quickGELU(self, x):
         return x * torch.sigmoid(1.702 * x)
-
+    
     def forward(self, hidden_states, attn_mask=None):
         residual = hidden_states
 
@@ -150,16 +125,10 @@ class CLIPEncoderLayer(torch.nn.Module):
         hidden_states = residual + hidden_states
 
         return hidden_states
-
+    
 
 class SDTextEncoder(torch.nn.Module):
-    def __init__(
-            self,
-            embed_dim=768,
-            vocab_size=49408,
-            max_position_embeddings=77,
-            num_encoder_layers=12,
-            encoder_intermediate_size=3072):
+    def __init__(self, embed_dim=768, vocab_size=49408, max_position_embeddings=77, num_encoder_layers=12, encoder_intermediate_size=3072):
         super().__init__()
 
         # token_embedding
@@ -169,8 +138,7 @@ class SDTextEncoder(torch.nn.Module):
         self.position_embeds = torch.nn.Parameter(torch.zeros(1, max_position_embeddings, embed_dim))
 
         # encoders
-        self.encoders = torch.nn.ModuleList(
-            [CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
+        self.encoders = torch.nn.ModuleList([CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
 
         # attn_mask
         self.attn_mask = self.attention_mask(max_position_embeddings)
@@ -193,7 +161,7 @@ class SDTextEncoder(torch.nn.Module):
                 break
         embeds = self.final_layer_norm(embeds)
         return embeds
-
+    
     @staticmethod
     def state_dict_converter():
         return SDTextEncoderStateDictConverter()
@@ -234,7 +202,7 @@ class SDTextEncoderStateDictConverter:
                 name_ = ".".join(["encoders", layer_id, attn_rename_dict[layer_type], tail])
                 state_dict_[name_] = param
         return state_dict_
-
+    
     def from_civitai(self, state_dict):
         rename_dict = {
             "cond_stage_model.transformer.text_model.embeddings.token_embedding.weight": "token_embedding.weight",
@@ -281,7 +249,7 @@ class SDTextEncoderStateDictConverter:
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.k_proj.bias": "encoders.10.attn.to_k.bias",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.k_proj.weight": "encoders.10.attn.to_k.weight",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.bias": "encoders.10.attn.to_out.bias",
-            "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.weight": "encoders.10.attn.to_out.weight",
+            "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.weight": "encoders.10.attn.to_out.weight",        
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.q_proj.bias": "encoders.10.attn.to_q.bias",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.q_proj.weight": "encoders.10.attn.to_q.weight",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.v_proj.bias": "encoders.10.attn.to_v.bias",
@@ -432,7 +400,8 @@ class SDTextEncoderStateDictConverter:
             "cond_stage_model.transformer.text_model.encoder.layers.9.self_attn.v_proj.weight": "encoders.9.attn.to_v.weight",
             "cond_stage_model.transformer.text_model.final_layer_norm.bias": "final_layer_norm.bias",
             "cond_stage_model.transformer.text_model.final_layer_norm.weight": "final_layer_norm.weight",
-            "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight": "position_embeds" }
+            "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight": "position_embeds"
+        }
         state_dict_ = {}
         for name in state_dict:
             if name in rename_dict:

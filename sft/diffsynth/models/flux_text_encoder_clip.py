@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 import torch
 
 
@@ -43,13 +41,7 @@ class Attention(torch.nn.Module):
 class CLIPEncoderLayer(torch.nn.Module):
     def __init__(self, embed_dim, intermediate_size, num_heads=12, head_dim=64, use_quick_gelu=True):
         super().__init__()
-        self.attn = Attention(
-            q_dim=embed_dim,
-            num_heads=num_heads,
-            head_dim=head_dim,
-            bias_q=True,
-            bias_kv=True,
-            bias_out=True)
+        self.attn = Attention(q_dim=embed_dim, num_heads=num_heads, head_dim=head_dim, bias_q=True, bias_kv=True, bias_out=True)
         self.layer_norm1 = torch.nn.LayerNorm(embed_dim)
         self.layer_norm2 = torch.nn.LayerNorm(embed_dim)
         self.fc1 = torch.nn.Linear(embed_dim, intermediate_size)
@@ -59,7 +51,7 @@ class CLIPEncoderLayer(torch.nn.Module):
 
     def quickGELU(self, x):
         return x * torch.sigmoid(1.702 * x)
-
+    
     def forward(self, hidden_states, attn_mask=None):
         residual = hidden_states
 
@@ -78,16 +70,10 @@ class CLIPEncoderLayer(torch.nn.Module):
         hidden_states = residual + hidden_states
 
         return hidden_states
-
+    
 
 class FluxTextEncoderClip(torch.nn.Module):
-    def __init__(
-            self,
-            embed_dim=768,
-            vocab_size=49408,
-            max_position_embeddings=77,
-            num_encoder_layers=12,
-            encoder_intermediate_size=3072):
+    def __init__(self, embed_dim=768, vocab_size=49408, max_position_embeddings=77, num_encoder_layers=12, encoder_intermediate_size=3072):
         super().__init__()
 
         # token_embedding
@@ -97,8 +83,7 @@ class FluxTextEncoderClip(torch.nn.Module):
         self.position_embeds = torch.nn.Parameter(torch.zeros(1, max_position_embeddings, embed_dim))
 
         # encoders
-        self.encoders = torch.nn.ModuleList(
-            [CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
+        self.encoders = torch.nn.ModuleList([CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
 
         # attn_mask
         self.attn_mask = self.attention_mask(max_position_embeddings)
@@ -117,7 +102,7 @@ class FluxTextEncoderClip(torch.nn.Module):
         embeds = embeds + self.position_embeds.to(dtype=embeds.dtype, device=input_ids.device)
         attn_mask = self.attn_mask.to(device=embeds.device, dtype=embeds.dtype)
         if extra_mask is not None:
-            attn_mask[:, extra_mask[0] == 0] = float("-inf")
+            attn_mask[:, extra_mask[0]==0] = float("-inf")
         for encoder_id, encoder in enumerate(self.encoders):
             embeds = encoder(embeds, attn_mask=attn_mask)
             if encoder_id + clip_skip == len(self.encoders):

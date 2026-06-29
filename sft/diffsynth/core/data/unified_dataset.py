@@ -1,9 +1,5 @@
-import json
-
-import pandas
-import torch
-
 from .operators import *
+import torch, json, pandas
 
 
 class UnifiedDataset(torch.utils.data.Dataset):
@@ -14,7 +10,6 @@ class UnifiedDataset(torch.utils.data.Dataset):
         data_file_keys=tuple(),
         main_data_operator=lambda x: x,
         special_operator_map=None,
-        max_data_items=None,
     ):
         self.base_path = base_path
         self.metadata_path = metadata_path
@@ -23,48 +18,43 @@ class UnifiedDataset(torch.utils.data.Dataset):
         self.main_data_operator = main_data_operator
         self.cached_data_operator = LoadTorchPickle()
         self.special_operator_map = {} if special_operator_map is None else special_operator_map
-        self.max_data_items = max_data_items
         self.data = []
         self.cached_data = []
         self.load_from_cache = metadata_path is None
         self.load_metadata(metadata_path)
-
+    
     @staticmethod
     def default_image_operator(
         base_path="",
-        max_pixels=1920 * 1080, height=None, width=None,
+        max_pixels=1920*1080, height=None, width=None,
         height_division_factor=16, width_division_factor=16,
     ):
-        return RouteByType(
-            operator_map=[
-                (str, ToAbsolutePath(base_path) >> LoadImage() >> ImageCropAndResize(
-                    height, width, max_pixels, height_division_factor, width_division_factor)), (list, SequencialProcess(  # pylint: disable=line-too-long
-                        ToAbsolutePath(base_path) >> LoadImage() >> ImageCropAndResize(
-                            height, width, max_pixels, height_division_factor, width_division_factor))), ])
-
+        return RouteByType(operator_map=[
+            (str, ToAbsolutePath(base_path) >> LoadImage() >> ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor)),
+            (list, SequencialProcess(ToAbsolutePath(base_path) >> LoadImage() >> ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor))),
+        ])
+    
     @staticmethod
     def default_video_operator(
         base_path="",
-        max_pixels=1920 * 1080, height=None, width=None,
+        max_pixels=1920*1080, height=None, width=None,
         height_division_factor=16, width_division_factor=16,
         num_frames=81, time_division_factor=4, time_division_remainder=1,
-        frame_rate=24, fix_frame_rate=False,
     ):
         return RouteByType(operator_map=[
             (str, ToAbsolutePath(base_path) >> RouteByExtensionName(operator_map=[
-                (("jpg", "jpeg", "png", "webp"), LoadImage() >> ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor) >> ToList()),  # pylint: disable=line-too-long
+                (("jpg", "jpeg", "png", "webp"), LoadImage() >> ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor) >> ToList()),
                 (("gif",), LoadGIF(
                     num_frames, time_division_factor, time_division_remainder,
-                    frame_processor=ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor),  # pylint: disable=line-too-long
+                    frame_processor=ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor),
                 )),
                 (("mp4", "avi", "mov", "wmv", "mkv", "flv", "webm"), LoadVideo(
                     num_frames, time_division_factor, time_division_remainder,
-                    frame_processor=ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor),  # pylint: disable=line-too-long
-                    frame_rate=frame_rate, fix_frame_rate=fix_frame_rate,
+                    frame_processor=ImageCropAndResize(height, width, max_pixels, height_division_factor, width_division_factor),
                 )),
             ])),
         ])
-
+        
     def search_for_cached_data_files(self, path):
         for file_name in os.listdir(path):
             subpath = os.path.join(path, file_name)
@@ -72,7 +62,7 @@ class UnifiedDataset(torch.utils.data.Dataset):
                 self.search_for_cached_data_files(subpath)
             elif subpath.endswith(".pth"):
                 self.cached_data.append(subpath)
-
+    
     def load_metadata(self, metadata_path):
         if metadata_path is None:
             print("No metadata_path. Searching for cached data files.")
@@ -107,13 +97,11 @@ class UnifiedDataset(torch.utils.data.Dataset):
         return data
 
     def __len__(self):
-        if self.max_data_items is not None:
-            return self.max_data_items
-        elif self.load_from_cache:
+        if self.load_from_cache:
             return len(self.cached_data) * self.repeat
         else:
             return len(self.data) * self.repeat
-
+        
     def check_data_equal(self, data1, data2):
         # Debug only
         if len(data1) != len(data2):

@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 import torch
 from einops import rearrange, repeat
 
@@ -7,6 +5,7 @@ from einops import rearrange, repeat
 class TileWorker:
     def __init__(self):
         pass
+
 
     def mask(self, height, width, border_width):
         # Create a mask with shape (height, width).
@@ -17,12 +16,13 @@ class TileWorker:
         mask = (mask / border_width).clip(0, 1)
         return mask
 
+
     def tile(self, model_input, tile_size, tile_stride, tile_device, tile_dtype):
         # Convert a tensor (b, c, h, w) to (b, c, tile_size, tile_size, tile_num)
         batch_size, channel, _, _ = model_input.shape
         model_input = model_input.to(device=tile_device, dtype=tile_dtype)
         unfold_operator = torch.nn.Unfold(
-            kernel_size=(tile_size, tile_size), 
+            kernel_size=(tile_size, tile_size),
             stride=(tile_stride, tile_stride)
         )
         model_input = unfold_operator(model_input)
@@ -30,15 +30,8 @@ class TileWorker:
 
         return model_input
 
-    def tiled_inference(
-            self, 
-            forward_fn, 
-            model_input, 
-            tile_batch_size, 
-            inference_device, 
-            inference_dtype, 
-            tile_device, 
-            tile_dtype):
+
+    def tiled_inference(self, forward_fn, model_input, tile_batch_size, inference_device, inference_dtype, tile_device, tile_dtype):
         # Call y=forward_fn(x) for each tile
         tile_num = model_input.shape[-1]
         model_output_stack = []
@@ -53,18 +46,20 @@ class TileWorker:
 
             # process output
             y = forward_fn(x)
-            y = rearrange(y, "(n b) c h w -> b c h w n", n=tile_id_ - tile_id)
+            y = rearrange(y, "(n b) c h w -> b c h w n", n=tile_id_-tile_id)
             y = y.to(device=tile_device, dtype=tile_dtype)
             model_output_stack.append(y)
 
         model_output = torch.concat(model_output_stack, dim=-1)
         return model_output
 
+
     def io_scale(self, model_output, tile_size):
         # Determine the size modification happened in forward_fn
         # We only consider the same scale on height and width.
         io_scale = model_output.shape[2] / tile_size
         return io_scale
+    
 
     def untile(self, model_output, height, width, tile_size, tile_stride, border_width, tile_device, tile_dtype):
         # The reversed function of tile
@@ -74,8 +69,8 @@ class TileWorker:
         model_output = model_output * mask
 
         fold_operator = torch.nn.Fold(
-            output_size=(height, width), 
-            kernel_size=(tile_size, tile_size), 
+            output_size=(height, width),
+            kernel_size=(tile_size, tile_size),
             stride=(tile_stride, tile_stride)
         )
         mask = repeat(mask[0, 0, :, :, 0], "h w -> 1 (h w) n", n=model_output.shape[-1])
@@ -84,51 +79,28 @@ class TileWorker:
 
         return model_output
 
-    def tiled_forward(
-            self, 
-            forward_fn, 
-            model_input, 
-            tile_size, 
-            tile_stride, 
-            tile_batch_size=1, 
-            tile_device="cpu", 
-            tile_dtype=torch.float32, 
-            border_width=None):
+
+    def tiled_forward(self, forward_fn, model_input, tile_size, tile_stride, tile_batch_size=1, tile_device="cpu", tile_dtype=torch.float32, border_width=None):
         # Prepare
         inference_device, inference_dtype = model_input.device, model_input.dtype
         height, width = model_input.shape[2], model_input.shape[3]
-        border_width = int(tile_stride * 0.5) if border_width is None else border_width
+        border_width = int(tile_stride*0.5) if border_width is None else border_width
 
         # tile
         model_input = self.tile(model_input, tile_size, tile_stride, tile_device, tile_dtype)
 
         # inference
-        model_output = self.tiled_inference(
-            forward_fn, 
-            model_input, 
-            tile_batch_size, 
-            inference_device, 
-            inference_dtype, 
-            tile_device, 
-            tile_dtype)
+        model_output = self.tiled_inference(forward_fn, model_input, tile_batch_size, inference_device, inference_dtype, tile_device, tile_dtype)
 
         # resize
         io_scale = self.io_scale(model_output, tile_size)
-        height, width = int(height * io_scale), int(width * io_scale)
-        tile_size, tile_stride = int(tile_size * io_scale), int(tile_stride * io_scale)
-        border_width = int(border_width * io_scale)
+        height, width = int(height*io_scale), int(width*io_scale)
+        tile_size, tile_stride = int(tile_size*io_scale), int(tile_stride*io_scale)
+        border_width = int(border_width*io_scale)
 
         # untile
-        model_output = self.untile(
-            model_output, 
-            height, 
-            width, 
-            tile_size, 
-            tile_stride, 
-            border_width, 
-            tile_device, 
-            tile_dtype)
-
+        model_output = self.untile(model_output, height, width, tile_size, tile_stride, border_width, tile_device, tile_dtype)
+        
         # Done!
         model_output = model_output.to(device=inference_device, dtype=inference_dtype)
         return model_output
@@ -217,15 +189,7 @@ class Attention(torch.nn.Module):
 
 class VAEAttentionBlock(torch.nn.Module):
 
-    def __init__(
-            self, 
-            num_attention_heads, 
-            attention_head_dim, 
-            in_channels, 
-            num_layers=1, 
-            norm_num_groups=32, 
-            eps=1e-5, 
-            use_conv_attention=True):
+    def __init__(self, num_attention_heads, attention_head_dim, in_channels, num_layers=1, norm_num_groups=32, eps=1e-5, use_conv_attention=True):
         super().__init__()
         inner_dim = num_attention_heads * attention_head_dim
 
@@ -234,11 +198,11 @@ class VAEAttentionBlock(torch.nn.Module):
         if use_conv_attention:
             self.transformer_blocks = torch.nn.ModuleList([
                 ConvAttention(
-                    inner_dim, 
-                    num_attention_heads, 
-                    attention_head_dim, 
-                    bias_q=True, 
-                    bias_kv=True, 
+                    inner_dim,
+                    num_attention_heads,
+                    attention_head_dim,
+                    bias_q=True,
+                    bias_kv=True,
                     bias_out=True
                 )
                 for d in range(num_layers)
@@ -246,11 +210,11 @@ class VAEAttentionBlock(torch.nn.Module):
         else:
             self.transformer_blocks = torch.nn.ModuleList([
                 Attention(
-                    inner_dim, 
-                    num_attention_heads, 
-                    attention_head_dim, 
-                    bias_q=True, 
-                    bias_kv=True, 
+                    inner_dim,
+                    num_attention_heads,
+                    attention_head_dim,
+                    bias_q=True,
+                    bias_kv=True,
                     bias_out=True
                 )
                 for d in range(num_layers)
@@ -285,8 +249,7 @@ class ResnetBlock(torch.nn.Module):
         self.nonlinearity = torch.nn.SiLU()
         self.conv_shortcut = None
         if in_channels != out_channels:
-            self.conv_shortcut = torch.nn.Conv2d(
-                in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=True)
+            self.conv_shortcut = torch.nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=True)
 
     def forward(self, hidden_states, time_emb, text_emb, res_stack, **kwargs):
         x = hidden_states
@@ -335,45 +298,45 @@ class FluxVAEDecoder(torch.nn.Module):
         super().__init__()
         self.scaling_factor = 0.3611
         self.shift_factor = 0.1159
-        self.conv_in = torch.nn.Conv2d(16, 512, kernel_size=3, padding=1)  # Different from SD 1.x
+        self.conv_in = torch.nn.Conv2d(16, 512, kernel_size=3, padding=1) # Different from SD 1.x
 
         self.blocks = torch.nn.ModuleList([
             # UNetMidBlock2D
-            ResnetBlock(512, 512, eps=1e-6), 
-            VAEAttentionBlock(1, 512, 512, 1, eps=1e-6, use_conv_attention=use_conv_attention), 
-            ResnetBlock(512, 512, eps=1e-6), 
+            ResnetBlock(512, 512, eps=1e-6),
+            VAEAttentionBlock(1, 512, 512, 1, eps=1e-6, use_conv_attention=use_conv_attention),
+            ResnetBlock(512, 512, eps=1e-6),
             # UpDecoderBlock2D
-            ResnetBlock(512, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
-            UpSampler(512), 
+            ResnetBlock(512, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
+            UpSampler(512),
             # UpDecoderBlock2D
-            ResnetBlock(512, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
-            UpSampler(512), 
+            ResnetBlock(512, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
+            UpSampler(512),
             # UpDecoderBlock2D
-            ResnetBlock(512, 256, eps=1e-6), 
-            ResnetBlock(256, 256, eps=1e-6), 
-            ResnetBlock(256, 256, eps=1e-6), 
-            UpSampler(256), 
+            ResnetBlock(512, 256, eps=1e-6),
+            ResnetBlock(256, 256, eps=1e-6),
+            ResnetBlock(256, 256, eps=1e-6),
+            UpSampler(256),
             # UpDecoderBlock2D
-            ResnetBlock(256, 128, eps=1e-6), 
-            ResnetBlock(128, 128, eps=1e-6), 
-            ResnetBlock(128, 128, eps=1e-6), 
+            ResnetBlock(256, 128, eps=1e-6),
+            ResnetBlock(128, 128, eps=1e-6),
+            ResnetBlock(128, 128, eps=1e-6),
         ])
 
         self.conv_norm_out = torch.nn.GroupNorm(num_channels=128, num_groups=32, eps=1e-6)
         self.conv_act = torch.nn.SiLU()
         self.conv_out = torch.nn.Conv2d(128, 3, kernel_size=3, padding=1)
-
+    
     def tiled_forward(self, sample, tile_size=64, tile_stride=32):
         hidden_states = TileWorker().tiled_forward(
-            lambda x: self.forward(x), 
-            sample, 
-            tile_size, 
-            tile_stride, 
-            tile_device=sample.device, 
+            lambda x: self.forward(x),
+            sample,
+            tile_size,
+            tile_stride,
+            tile_device=sample.device,
             tile_dtype=sample.dtype
         )
         return hidden_states
@@ -393,7 +356,7 @@ class FluxVAEDecoder(torch.nn.Module):
         # 2. blocks
         for i, block in enumerate(self.blocks):
             hidden_states, time_emb, text_emb, res_stack = block(hidden_states, time_emb, text_emb, res_stack)
-
+        
         # 3. output
         hidden_states = self.conv_norm_out(hidden_states)
         hidden_states = self.conv_act(hidden_states)
@@ -411,24 +374,24 @@ class FluxVAEEncoder(torch.nn.Module):
 
         self.blocks = torch.nn.ModuleList([
             # DownEncoderBlock2D
-            ResnetBlock(128, 128, eps=1e-6), 
-            ResnetBlock(128, 128, eps=1e-6), 
-            DownSampler(128, padding=0, extra_padding=True), 
+            ResnetBlock(128, 128, eps=1e-6),
+            ResnetBlock(128, 128, eps=1e-6),
+            DownSampler(128, padding=0, extra_padding=True),
             # DownEncoderBlock2D
-            ResnetBlock(128, 256, eps=1e-6), 
-            ResnetBlock(256, 256, eps=1e-6), 
-            DownSampler(256, padding=0, extra_padding=True), 
+            ResnetBlock(128, 256, eps=1e-6),
+            ResnetBlock(256, 256, eps=1e-6),
+            DownSampler(256, padding=0, extra_padding=True),
             # DownEncoderBlock2D
-            ResnetBlock(256, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
-            DownSampler(512, padding=0, extra_padding=True), 
+            ResnetBlock(256, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
+            DownSampler(512, padding=0, extra_padding=True),
             # DownEncoderBlock2D
-            ResnetBlock(512, 512, eps=1e-6), 
-            ResnetBlock(512, 512, eps=1e-6), 
+            ResnetBlock(512, 512, eps=1e-6),
+            ResnetBlock(512, 512, eps=1e-6),
             # UNetMidBlock2D
-            ResnetBlock(512, 512, eps=1e-6), 
-            VAEAttentionBlock(1, 512, 512, 1, eps=1e-6, use_conv_attention=use_conv_attention), 
-            ResnetBlock(512, 512, eps=1e-6), 
+            ResnetBlock(512, 512, eps=1e-6),
+            VAEAttentionBlock(1, 512, 512, 1, eps=1e-6, use_conv_attention=use_conv_attention),
+            ResnetBlock(512, 512, eps=1e-6),
         ])
 
         self.conv_norm_out = torch.nn.GroupNorm(num_channels=512, num_groups=32, eps=1e-6)
@@ -437,11 +400,11 @@ class FluxVAEEncoder(torch.nn.Module):
 
     def tiled_forward(self, sample, tile_size=64, tile_stride=32):
         hidden_states = TileWorker().tiled_forward(
-            lambda x: self.forward(x), 
-            sample, 
-            tile_size, 
-            tile_stride, 
-            tile_device=sample.device, 
+            lambda x: self.forward(x),
+            sample,
+            tile_size,
+            tile_stride,
+            tile_device=sample.device,
             tile_dtype=sample.dtype
         )
         return hidden_states
@@ -450,7 +413,7 @@ class FluxVAEEncoder(torch.nn.Module):
         # For VAE Decoder, we do not need to apply the tiler on each layer.
         if tiled:
             return self.tiled_forward(sample, tile_size=tile_size, tile_stride=tile_stride)
-
+        
         # 1. pre-process
         hidden_states = self.conv_in(sample)
         time_emb = None
@@ -460,7 +423,7 @@ class FluxVAEEncoder(torch.nn.Module):
         # 2. blocks
         for i, block in enumerate(self.blocks):
             hidden_states, time_emb, text_emb, res_stack = block(hidden_states, time_emb, text_emb, res_stack)
-
+        
         # 3. output
         hidden_states = self.conv_norm_out(hidden_states)
         hidden_states = self.conv_act(hidden_states)
@@ -469,7 +432,7 @@ class FluxVAEEncoder(torch.nn.Module):
         hidden_states = (hidden_states - self.shift_factor) * self.scaling_factor
 
         return hidden_states
-
+    
     def encode_video(self, sample, batch_size=8):
         B = sample.shape[0]
         hidden_states = []
@@ -477,12 +440,12 @@ class FluxVAEEncoder(torch.nn.Module):
         for i in range(0, sample.shape[2], batch_size):
 
             j = min(i + batch_size, sample.shape[2])
-            sample_batch = rearrange(sample[:, :, i:j], "B C T H W -> (B T) C H W")
+            sample_batch = rearrange(sample[:,:,i:j], "B C T H W -> (B T) C H W")
 
             hidden_states_batch = self(sample_batch)
             hidden_states_batch = rearrange(hidden_states_batch, "(B T) C H W -> B C T H W", B=B)
 
             hidden_states.append(hidden_states_batch)
-
+        
         hidden_states = torch.concat(hidden_states, dim=2)
         return hidden_states

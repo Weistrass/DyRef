@@ -1,15 +1,10 @@
-import math
-from typing import Optional, Tuple
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
+from typing import Tuple, Optional
 from einops import rearrange
-
-from ..core.gradient import gradient_checkpoint_forward
 from .wan_video_camera_controller import SimpleAdapter
-from .wantodance import WanToDanceMusicEncoderLayer, WanToDanceRotaryEmbedding
-
 try:
     import flash_attn_interface
     FLASH_ATTN_3_AVAILABLE = True
@@ -27,8 +22,8 @@ try:
     SAGE_ATTN_AVAILABLE = True
 except ModuleNotFoundError:
     SAGE_ATTN_AVAILABLE = False
-
-
+    
+    
 def flash_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, num_heads: int, compatibility_mode=False):
     if compatibility_mode:
         q = rearrange(q, "b s (n d) -> b n s d", n=num_heads)
@@ -41,7 +36,7 @@ def flash_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, num_heads
         k = rearrange(k, "b s (n d) -> b s n d", n=num_heads)
         v = rearrange(v, "b s (n d) -> b s n d", n=num_heads)
         x = flash_attn_interface.flash_attn_func(q, k, v)
-        if isinstance(x, tuple):
+        if isinstance(x,tuple):
             x = x[0]
         x = rearrange(x, "b s n d -> b s (n d)", n=num_heads)
     elif FLASH_ATTN_2_AVAILABLE:
@@ -71,7 +66,7 @@ def modulate(x: torch.Tensor, shift: torch.Tensor, scale: torch.Tensor):
 
 def sinusoidal_embedding_1d(dim, position):
     sinusoid = torch.outer(position.type(torch.float64), torch.pow(
-        10000, -torch.arange(dim // 2, dtype=torch.float64, device=position.device).div(dim // 2)))
+        10000, -torch.arange(dim//2, dtype=torch.float64, device=position.device).div(dim//2)))
     x = torch.cat([torch.cos(sinusoid), torch.sin(sinusoid)], dim=1)
     return x.to(position.dtype)
 
@@ -97,16 +92,8 @@ def rope_apply(x, freqs, num_heads):
     x = rearrange(x, "b s (n d) -> b s n d", n=num_heads)
     x_out = torch.view_as_complex(x.to(torch.float64).reshape(
         x.shape[0], x.shape[1], x.shape[2], -1, 2))
-    freqs = freqs.to(torch.complex64) if freqs.device.type == "npu" else freqs
     x_out = torch.view_as_real(x_out * freqs).flatten(2)
     return x_out.to(x.dtype)
-
-
-def set_to_torch_norm(models):
-    for model in models:
-        for module in model.modules():
-            if isinstance(module, RMSNorm):
-                module.use_torch_norm = True
 
 
 class RMSNorm(nn.Module):
@@ -114,25 +101,20 @@ class RMSNorm(nn.Module):
         super().__init__()
         self.eps = eps
         self.weight = nn.Parameter(torch.ones(dim))
-        self.use_torch_norm = False
-        self.normalized_shape = (dim, )
 
     def norm(self, x):
         return x * torch.rsqrt(x.pow(2).mean(dim=-1, keepdim=True) + self.eps)
 
     def forward(self, x):
         dtype = x.dtype
-        if self.use_torch_norm:
-            return F.rms_norm(x, self.normalized_shape, self.weight, self.eps)
-        else:
-            return self.norm(x.float()).to(dtype) * self.weight
+        return self.norm(x.float()).to(dtype) * self.weight
 
 
 class AttentionModule(nn.Module):
     def __init__(self, num_heads):
         super().__init__()
         self.num_heads = num_heads
-
+        
     def forward(self, q, k, v):
         x = flash_attention(q=q, k=k, v=v, num_heads=self.num_heads)
         return x
@@ -151,7 +133,7 @@ class SelfAttention(nn.Module):
         self.o = nn.Linear(dim, dim)
         self.norm_q = RMSNorm(dim, eps=eps)
         self.norm_k = RMSNorm(dim, eps=eps)
-
+        
         self.attn = AttentionModule(self.num_heads)
 
     def forward(self, x, freqs):
@@ -182,7 +164,7 @@ class CrossAttention(nn.Module):
             self.k_img = nn.Linear(dim, dim)
             self.v_img = nn.Linear(dim, dim)
             self.norm_k_img = RMSNorm(dim, eps=eps)
-
+            
         self.attn = AttentionModule(self.num_heads)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor):
@@ -204,12 +186,11 @@ class CrossAttention(nn.Module):
 
 
 class GateModule(nn.Module):
-    def __init__(self, ):
+    def __init__(self,):
         super().__init__()
 
     def forward(self, x, gate, residual):
         return x + gate * residual
-
 
 class DiTBlock(nn.Module):
     def __init__(self, has_image_input: bool, dim: int, num_heads: int, ffn_dim: int, eps: float = 1e-6):
@@ -237,8 +218,8 @@ class DiTBlock(nn.Module):
             self.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(6, dim=chunk_dim)
         if has_seq:
             shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = (
-                shift_msa.squeeze(2), scale_msa.squeeze(2), gate_msa.squeeze(2), 
-                shift_mlp.squeeze(2), scale_mlp.squeeze(2), gate_mlp.squeeze(2), 
+                shift_msa.squeeze(2), scale_msa.squeeze(2), gate_msa.squeeze(2),
+                shift_mlp.squeeze(2), scale_mlp.squeeze(2), gate_mlp.squeeze(2),
             )
         input_x = modulate(self.norm1(x), shift_msa, scale_msa)
         x = self.gate(x, gate_msa, self.self_attn(input_x, freqs))
@@ -252,10 +233,10 @@ class MLP(torch.nn.Module):
     def __init__(self, in_dim, out_dim, has_pos_emb=False):
         super().__init__()
         self.proj = torch.nn.Sequential(
-            nn.LayerNorm(in_dim), 
-            nn.Linear(in_dim, in_dim), 
-            nn.GELU(), 
-            nn.Linear(in_dim, out_dim), 
+            nn.LayerNorm(in_dim),
+            nn.Linear(in_dim, in_dim),
+            nn.GELU(),
+            nn.Linear(in_dim, out_dim),
             nn.LayerNorm(out_dim)
         )
         self.has_pos_emb = has_pos_emb
@@ -279,8 +260,7 @@ class Head(nn.Module):
 
     def forward(self, x, t_mod):
         if len(t_mod.shape) == 3:
-            shift, scale = (self.modulation.unsqueeze(0).to(dtype=t_mod.dtype, 
-                            device=t_mod.device) + t_mod.unsqueeze(2)).chunk(2, dim=2)
+            shift, scale = (self.modulation.unsqueeze(0).to(dtype=t_mod.dtype, device=t_mod.device) + t_mod.unsqueeze(2)).chunk(2, dim=2)
             x = (self.head(self.norm(x) * (1 + scale.squeeze(2)) + shift.squeeze(2)))
         else:
             shift, scale = (self.modulation.to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(2, dim=1)
@@ -288,94 +268,29 @@ class Head(nn.Module):
         return x
 
 
-def wantodance_torch_dfs(model: nn.Module, parent_name='root'):
-    module_names, modules = [], []
-    current_name = parent_name if parent_name else 'root'
-    module_names.append(current_name)
-    modules.append(model)
-    for name, child in model.named_children():
-        if parent_name:
-            child_name = f'{parent_name}.{name}'
-        else:
-            child_name = name
-        child_modules, child_names = wantodance_torch_dfs(child, child_name)
-        module_names += child_names
-        modules += child_modules
-    return modules, module_names
-
-
-class WanToDanceInjector(nn.Module):
-    def __init__(self, all_modules, all_modules_names, dim=2048, num_heads=32, inject_layer=None):
-        if inject_layer is None:
-            inject_layer = []
-        super().__init__()
-        self.injected_block_id = {}
-        injector_id = 0
-        for mod_name, mod in zip(all_modules_names, all_modules):
-            if isinstance(mod, DiTBlock):
-                for inject_id in inject_layer:
-                    if f'root.transformer_blocks.{inject_id}' == mod_name:
-                        self.injected_block_id[inject_id] = injector_id
-                        injector_id += 1
-
-        self.injector = nn.ModuleList(
-            [
-                CrossAttention(
-                    dim=dim, 
-                    num_heads=num_heads, 
-                )
-                for _ in range(injector_id)
-            ]
-        )
-        self.injector_pre_norm_feat = nn.ModuleList(
-            [
-                nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6, )
-                for _ in range(injector_id)
-            ]
-        )
-        self.injector_pre_norm_vec = nn.ModuleList(
-            [
-                nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6, )
-                for _ in range(injector_id)
-            ]
-        )
-
-
 class WanModel(torch.nn.Module):
-
-    _repeated_blocks = ["DiTBlock"]
-
     def __init__(
-        self, 
-        dim: int, 
-        in_dim: int, 
-        ffn_dim: int, 
-        out_dim: int, 
-        text_dim: int, 
-        freq_dim: int, 
-        eps: float, 
-        patch_size: Tuple[int, int, int], 
-        num_heads: int, 
-        num_layers: int, 
-        has_image_input: bool, 
-        has_image_pos_emb: bool = False, 
-        has_ref_conv: bool = False, 
-        add_control_adapter: bool = False, 
-        in_dim_control_adapter: int = 24, 
-        seperated_timestep: bool = False, 
-        require_vae_embedding: bool = True, 
-        require_clip_embedding: bool = True, 
-        fuse_vae_embedding_in_latents: bool = False, 
-        wantodance_enable_music_inject: bool = False, 
-        wantodance_music_inject_layers = None, 
-        wantodance_enable_refimage: bool = False, 
-        wantodance_enable_refface: bool = False, 
-        wantodance_enable_global: bool = False, 
-        wantodance_enable_dynamicfps: bool = False, 
-        wantodance_enable_unimodel: bool = False, 
+        self,
+        dim: int,
+        in_dim: int,
+        ffn_dim: int,
+        out_dim: int,
+        text_dim: int,
+        freq_dim: int,
+        eps: float,
+        patch_size: Tuple[int, int, int],
+        num_heads: int,
+        num_layers: int,
+        has_image_input: bool,
+        has_image_pos_emb: bool = False,
+        has_ref_conv: bool = False,
+        add_control_adapter: bool = False,
+        in_dim_control_adapter: int = 24,
+        seperated_timestep: bool = False,
+        require_vae_embedding: bool = True,
+        require_clip_embedding: bool = True,
+        fuse_vae_embedding_in_latents: bool = False,
     ):
-        if wantodance_music_inject_layers is None:
-            wantodance_music_inject_layers = []
         super().__init__()
         self.dim = dim
         self.in_dim = in_dim
@@ -390,13 +305,13 @@ class WanModel(torch.nn.Module):
         self.patch_embedding = nn.Conv3d(
             in_dim, dim, kernel_size=patch_size, stride=patch_size)
         self.text_embedding = nn.Sequential(
-            nn.Linear(text_dim, dim), 
-            nn.GELU(approximate='tanh'), 
+            nn.Linear(text_dim, dim),
+            nn.GELU(approximate='tanh'),
             nn.Linear(dim, dim)
         )
         self.time_embedding = nn.Sequential(
-            nn.Linear(freq_dim, dim), 
-            nn.SiLU(), 
+            nn.Linear(freq_dim, dim),
+            nn.SiLU(),
             nn.Linear(dim, dim)
         )
         self.time_projection = nn.Sequential(
@@ -407,12 +322,7 @@ class WanModel(torch.nn.Module):
         ])
         self.head = Head(dim, out_dim, patch_size, eps)
         head_dim = dim // num_heads
-
-        if wantodance_enable_dynamicfps or wantodance_enable_unimodel:
-            end = int(22350 / 8 + 0.5)  # 149f * 30fps * 5s = 22350
-            self.freqs = precompute_freqs_cis_3d(head_dim, end=end)
-        else:
-            self.freqs = precompute_freqs_cis_3d(head_dim)
+        self.freqs = precompute_freqs_cis_3d(head_dim)
 
         if has_image_input:
             self.img_emb = MLP(1280, dim, has_pos_emb=has_image_pos_emb)  # clip_feature_dim = 1280
@@ -421,110 +331,12 @@ class WanModel(torch.nn.Module):
         self.has_image_pos_emb = has_image_pos_emb
         self.has_ref_conv = has_ref_conv
         if add_control_adapter:
-            self.control_adapter = SimpleAdapter(in_dim_control_adapter, dim, 
-                                                 kernel_size=patch_size[1:], stride=patch_size[1:])
+            self.control_adapter = SimpleAdapter(in_dim_control_adapter, dim, kernel_size=patch_size[1:], stride=patch_size[1:])
         else:
             self.control_adapter = None
 
-        self.prepare_wantodance(
-            in_dim, 
-            dim, 
-            num_heads, 
-            has_image_pos_emb, 
-            out_dim, 
-            patch_size, 
-            eps, 
-            wantodance_enable_music_inject, 
-            wantodance_music_inject_layers, 
-            wantodance_enable_refimage, 
-            wantodance_enable_refface, 
-            wantodance_enable_global, 
-            wantodance_enable_dynamicfps, 
-            wantodance_enable_unimodel)
-
-    def prepare_wantodance(
-        self, 
-        in_dim, dim, num_heads, has_image_pos_emb, out_dim, patch_size, eps, 
-        wantodance_enable_music_inject: bool = False, 
-        wantodance_music_inject_layers = None, 
-        wantodance_enable_refimage: bool = False, 
-        wantodance_enable_refface: bool = False, 
-        wantodance_enable_global: bool = False, 
-        wantodance_enable_dynamicfps: bool = False, 
-        wantodance_enable_unimodel: bool = False, 
-    ):
-        if wantodance_music_inject_layers is None:
-            wantodance_music_inject_layers = []
-        if wantodance_enable_music_inject:
-            all_modules, all_modules_names = wantodance_torch_dfs(self.blocks, parent_name="root.transformer_blocks")
-            self.music_injector = WanToDanceInjector(
-                all_modules, 
-                all_modules_names, 
-                dim=dim, 
-                num_heads=num_heads, 
-                inject_layer=wantodance_music_inject_layers)
-        if wantodance_enable_refimage:
-            self.img_emb_refimage = MLP(1280, dim, has_pos_emb=has_image_pos_emb)  # clip_feature_dim = 1280
-        if wantodance_enable_refface:
-            self.img_emb_refface = MLP(1280, dim, has_pos_emb=has_image_pos_emb)  # clip_feature_dim = 1280
-        if wantodance_enable_global or wantodance_enable_dynamicfps or wantodance_enable_unimodel:
-            music_feature_dim = 35
-            ff_size = 1024
-            dropout = 0.1
-            latent_dim = 256
-            nhead = 4
-            activation = F.gelu
-            rotary = WanToDanceRotaryEmbedding(dim=latent_dim)
-            self.music_projection = nn.Linear(music_feature_dim, latent_dim)
-            self.music_encoder = nn.Sequential()
-            for _ in range(2):
-                self.music_encoder.append(
-                    WanToDanceMusicEncoderLayer(
-                        d_model=latent_dim, 
-                        nhead=nhead, 
-                        dim_feedforward=ff_size, 
-                        dropout=dropout, 
-                        activation=activation, 
-                        batch_first=True, 
-                        rotary=rotary, 
-                        device='cuda', 
-                    )
-                )
-        if wantodance_enable_unimodel:
-            self.patch_embedding_global = nn.Conv3d(in_dim, dim, kernel_size=patch_size, stride=patch_size)
-        if wantodance_enable_unimodel:
-            self.head_global = Head(dim, out_dim, patch_size, eps)
-        self.wantodance_enable_music_inject = wantodance_enable_music_inject
-        self.wantodance_enable_refimage = wantodance_enable_refimage
-        self.wantodance_enable_refface = wantodance_enable_refface
-        self.wantodance_enable_global = wantodance_enable_global
-        self.wantodance_enable_dynamicfps = wantodance_enable_dynamicfps
-        self.wantodance_enable_unimodel = wantodance_enable_unimodel
-
-    def wantodance_after_transformer_block(self, block_idx, hidden_states):
-        if self.wantodance_enable_music_inject:
-            if block_idx in self.music_injector.injected_block_id.keys():
-                audio_attn_id = self.music_injector.injected_block_id[block_idx]
-                audio_emb = self.merged_audio_emb  # b f n c
-                num_frames = audio_emb.shape[1]
-                input_hidden_states = hidden_states.clone()  # b (f h w) c
-                input_hidden_states = rearrange(input_hidden_states, "b (t n) c -> (b t) n c", t=num_frames)
-                attn_hidden_states = self.music_injector.injector_pre_norm_feat[audio_attn_id](input_hidden_states)
-                audio_emb = rearrange(audio_emb, "b t c -> (b t) 1 c", t=num_frames)
-                attn_audio_emb = audio_emb
-                residual_out = self.music_injector.injector[audio_attn_id](attn_hidden_states, attn_audio_emb)
-                residual_out = rearrange(residual_out, "(b t) n c -> b (t n) c", t=num_frames)
-                hidden_states = hidden_states + residual_out
-        return hidden_states
-
-    def patchify(self, 
-                 x: torch.Tensor, 
-                 control_camera_latents_input: Optional[torch.Tensor] = None, 
-                 enable_wantodance_global=False):
-        if enable_wantodance_global:
-            x = self.patch_embedding_global(x)
-        else:
-            x = self.patch_embedding(x)
+    def patchify(self, x: torch.Tensor, control_camera_latents_input: Optional[torch.Tensor] = None):
+        x = self.patch_embedding(x)
         if self.control_adapter is not None and control_camera_latents_input is not None:
             y_camera = self.control_adapter(control_camera_latents_input)
             x = [u + v for u, v in zip(x, y_camera)]
@@ -533,47 +345,59 @@ class WanModel(torch.nn.Module):
 
     def unpatchify(self, x: torch.Tensor, grid_size: torch.Tensor):
         return rearrange(
-            x, 'b (f h w) (x y z c) -> b c (f x) (h y) (w z)', 
+            x, 'b (f h w) (x y z c) -> b c (f x) (h y) (w z)',
             f=grid_size[0], h=grid_size[1], w=grid_size[2], 
             x=self.patch_size[0], y=self.patch_size[1], z=self.patch_size[2]
         )
 
-    def forward(self, 
-                x: torch.Tensor, 
-                timestep: torch.Tensor, 
-                context: torch.Tensor, 
-                clip_feature: Optional[torch.Tensor] = None, 
-                y: Optional[torch.Tensor] = None, 
-                use_gradient_checkpointing: bool = False, 
-                use_gradient_checkpointing_offload: bool = False, 
-                **kwargs, 
+    def forward(self,
+                x: torch.Tensor,
+                timestep: torch.Tensor,
+                context: torch.Tensor,
+                clip_feature: Optional[torch.Tensor] = None,
+                y: Optional[torch.Tensor] = None,
+                use_gradient_checkpointing: bool = False,
+                use_gradient_checkpointing_offload: bool = False,
+                **kwargs,
                 ):
         t = self.time_embedding(
             sinusoidal_embedding_1d(self.freq_dim, timestep).to(x.dtype))
         t_mod = self.time_projection(t).unflatten(1, (6, self.dim))
         context = self.text_embedding(context)
-
+        
         if self.has_image_input:
             x = torch.cat([x, y], dim=1)  # (b, c_x + c_y, f, h, w)
             clip_embdding = self.img_emb(clip_feature)
             context = torch.cat([clip_embdding, context], dim=1)
-
+        
         x, (f, h, w) = self.patchify(x)
-
+        
         freqs = torch.cat([
-            self.freqs[0][:f].view(f, 1, 1, -1).expand(f, h, w, -1), 
-            self.freqs[1][:h].view(1, h, 1, -1).expand(f, h, w, -1), 
+            self.freqs[0][:f].view(f, 1, 1, -1).expand(f, h, w, -1),
+            self.freqs[1][:h].view(1, h, 1, -1).expand(f, h, w, -1),
             self.freqs[2][:w].view(1, 1, w, -1).expand(f, h, w, -1)
         ], dim=-1).reshape(f * h * w, 1, -1).to(x.device)
+        
+        def create_custom_forward(module):
+            def custom_forward(*inputs):
+                return module(*inputs)
+            return custom_forward
 
         for block in self.blocks:
-            if self.training:
-                x = gradient_checkpoint_forward(
-                    block, 
-                    use_gradient_checkpointing, 
-                    use_gradient_checkpointing_offload, 
-                    x, context, t_mod, freqs
-                )
+            if self.training and use_gradient_checkpointing:
+                if use_gradient_checkpointing_offload:
+                    with torch.autograd.graph.save_on_cpu():
+                        x = torch.utils.checkpoint.checkpoint(
+                            create_custom_forward(block),
+                            x, context, t_mod, freqs,
+                            use_reentrant=False,
+                        )
+                else:
+                    x = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(block),
+                        x, context, t_mod, freqs,
+                        use_reentrant=False,
+                    )
             else:
                 x = block(x, context, t_mod, freqs)
 

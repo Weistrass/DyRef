@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def NexusGenAutoregressiveModelStateDictConverter(state_dict):
     new_state_dict = {}
     for key in state_dict:

@@ -1,14 +1,12 @@
-import html
 import math
-import string
-
-import ftfy
-import regex as re
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoTokenizer
-
+import ftfy
+import html
+import string
+import regex as re
 
 def fp16_clamp(x):
     if x.dtype == torch.float16 and torch.isinf(x).any():
@@ -194,7 +192,6 @@ class T5RelativeEmbedding(nn.Module):
         rel_buckets += torch.where(rel_pos < max_exact, rel_pos, rel_pos_large)
         return rel_buckets
 
-
 def init_weights(m):
     if isinstance(m, T5LayerNorm):
         nn.init.ones_(m.weight)
@@ -322,7 +319,7 @@ class HuggingfaceTokenizer:
             return ids.input_ids, ids.attention_mask
         else:
             return ids.input_ids
-
+    
     def _clean(self, text):
         if self.clean == 'whitespace':
             text = whitespace_clean(basic_clean(text))

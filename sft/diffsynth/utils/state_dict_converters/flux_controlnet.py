@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 import torch
 
 
@@ -101,5 +99,5 @@ def FluxControlNetStateDictConverter(state_dict):
                 state_dict_.pop(name.replace(f".{component}_to_q.", f".{component}_to_q."))
                 state_dict_.pop(name.replace(f".{component}_to_q.", f".{component}_to_k."))
                 state_dict_.pop(name.replace(f".{component}_to_q.", f".{component}_to_v."))
-
+    
     return state_dict_

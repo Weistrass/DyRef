@@ -1,18 +1,15 @@
-import os
-import shutil
-import subprocess
-import traceback
-
-import imageio
+import imageio, os
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+import subprocess
+import shutil
 
 
 class LowMemoryVideo:
     def __init__(self, file_name):
         self.reader = imageio.get_reader(file_name)
-
+    
     def __len__(self):
         return self.reader.count_frames()
 
@@ -27,10 +24,10 @@ def split_file_name(file_name):
     result = []
     number = -1
     for i in file_name:
-        if ord(i) >= ord("0") and ord(i) <= ord("9"):
+        if ord(i)>=ord("0") and ord(i)<=ord("9"):
             if number == -1:
                 number = 0
-            number = number * 10 + ord(i) - ord("0")
+            number = number*10 + ord(i) - ord("0")
         else:
             if number != -1:
                 result.append(number)
@@ -56,7 +53,7 @@ class LowMemoryImageFolder:
             self.file_list = search_for_images(folder)
         else:
             self.file_list = [os.path.join(folder, file_name) for file_name in file_list]
-
+    
     def __len__(self):
         return len(self.file_list)
 
@@ -73,12 +70,12 @@ def crop_and_resize(image, height, width):
     if image_height / image_width < height / width:
         croped_width = int(image_height / height * width)
         left = (image_width - croped_width) // 2
-        image = image[:, left: left + croped_width]
+        image = image[:, left: left+croped_width]
         image = Image.fromarray(image).resize((width, height))
     else:
         croped_height = int(image_width / width * height)
         left = (image_height - croped_height) // 2
-        image = image[left: left + croped_height, :]
+        image = image[left: left+croped_height, :]
         image = Image.fromarray(image).resize((width, height))
     return image
 
@@ -119,7 +116,7 @@ class VideoData:
         if self.height is not None and self.width is not None:
             return self.height, self.width
         else:
-            width, height = self.__getitem__(0).size
+            height, width, _ = self.__getitem__(0).shape
             return height, width
 
     def __getitem__(self, item):
@@ -146,7 +143,6 @@ def save_video(frames, save_path, fps, quality=9, ffmpeg_params=None):
         frame = np.array(frame)
         writer.append_data(frame)
     writer.close()
-
 
 def save_frames(frames, save_path):
     os.makedirs(save_path, exist_ok=True)
@@ -210,11 +206,10 @@ def merge_video_audio(video_path: str, audio_path: str):
         shutil.move(temp_output, video_path)
         print(f"Merge completed, saved to {video_path}")
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:
         if os.path.exists(temp_output):
             os.remove(temp_output)
         print(f"merge_video_audio failed with error: {e}")
-        traceback.print_exc()
 
 
 def save_video_with_audio(frames, save_path, audio_path, fps=16, quality=9, ffmpeg_params=None):

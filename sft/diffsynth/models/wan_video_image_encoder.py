@@ -4,12 +4,10 @@ Concise re-implementation of
 ``https://github.com/mlfoundations/open_clip''.
 """
 import math
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as T
-
 from .wan_video_dit import flash_attention
 
 
@@ -201,6 +199,7 @@ def xlm_roberta_large(pretrained=False,
         return model
 
 
+
 def pos_interpolate(pos, seq_len):
     if pos.size(1) == seq_len:
         return pos
@@ -217,7 +216,7 @@ def pos_interpolate(pos, seq_len):
                 mode='bicubic',
                 align_corners=False).flatten(2).transpose(1, 2)
         ],
-            dim=1)
+                         dim=1)
 
 
 class QuickGELU(nn.Module):
@@ -368,7 +367,7 @@ class AttentionPool(nn.Module):
         b, s, c, n, d = *x.size(), self.num_heads, self.head_dim
 
         # compute query, key, value
-        q = self.to_q(self.cls_embedding).view(1, 1, n * d).expand(b, -1, -1)
+        q = self.to_q(self.cls_embedding).view(1, 1, n*d).expand(b, -1, -1)
         k, v = self.to_kv(x).chunk(2, dim=-1)
 
         # compute attention

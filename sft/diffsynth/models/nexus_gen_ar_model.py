@@ -1,7 +1,3 @@
-# pylint: disable=invalid-name
-
-# pylint: disable=line-too-long
-
 import os
 import re
 from dataclasses import dataclass
@@ -10,24 +6,23 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
+
 from transformers.cache_utils import Cache
-from transformers.feature_extraction_utils import BatchFeature
-from transformers.generation import (GenerateDecoderOnlyOutput,
-                                     GenerateEncoderDecoderOutput,
-                                     GenerationConfig, GenerationMixin,
-                                     LogitsProcessorList, StoppingCriteriaList)
-from transformers.image_utils import ImageInput, VideoInput
+from transformers.generation import GenerationMixin, LogitsProcessorList, StoppingCriteriaList, GenerationConfig, GenerateDecoderOnlyOutput, GenerateEncoderDecoderOutput
+from transformers.utils import add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from transformers.modeling_outputs import ModelOutput
-from transformers.models.qwen2_5_vl.configuration_qwen2_5_vl import \
-    Qwen2_5_VLConfig
+from transformers.models.qwen2_5_vl.configuration_qwen2_5_vl import Qwen2_5_VLConfig
 from transformers.models.qwen2_5_vl.modeling_qwen2_5_vl import (
-    QWEN2_5_VL_INPUTS_DOCSTRING, Qwen2_5_VisionTransformerPretrainedModel,
-    Qwen2_5_VLModel, Qwen2_5_VLPreTrainedModel)
-from transformers.processing_utils import (ProcessingKwargs, ProcessorMixin,
-                                           Unpack, VideosKwargs)
+    Qwen2_5_VisionTransformerPretrainedModel,
+    Qwen2_5_VLModel,
+    Qwen2_5_VLPreTrainedModel,
+    QWEN2_5_VL_INPUTS_DOCSTRING,
+    )
+
+from transformers.feature_extraction_utils import BatchFeature
+from transformers.image_utils import ImageInput, VideoInput
+from transformers.processing_utils import ProcessingKwargs, ProcessorMixin, Unpack, VideosKwargs
 from transformers.tokenization_utils_base import PreTokenizedInput, TextInput
-from transformers.utils import (add_start_docstrings_to_model_forward, logging,
-                                replace_return_docstrings)
 
 GenerateNonBeamOutput = Union[GenerateDecoderOnlyOutput, GenerateEncoderDecoderOutput]
 
@@ -350,7 +345,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
         >>> # Generate
         >>> generate_ids = model.generate(inputs.input_ids, max_length=30)
         >>> tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        "The image shows a street scene with a red stop sign in the foreground. In the background, there is a large red gate with Chinese characters ..."  # pylint: disable=line-too-long
+        "The image shows a street scene with a red stop sign in the foreground. In the background, there is a large red gate with Chinese characters ..."
         ```"""
 
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
@@ -370,7 +365,8 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
                 n_image_features = image_embeds.shape[0]
                 if n_image_tokens != n_image_features:
                     raise ValueError(
-                        f"Image features and image tokens do not match: tokens: {n_image_tokens}, features {n_image_features}" )  # pylint: disable=line-too-long
+                        f"Image features and image tokens do not match: tokens: {n_image_tokens}, features {n_image_features}"
+                    )
 
                 mask = input_ids == self.config.image_token_id
                 mask_unsqueezed = mask.unsqueeze(-1)
@@ -387,7 +383,8 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
                 n_video_features = video_embeds.shape[0]
                 if n_video_tokens != n_video_features:
                     raise ValueError(
-                        f"Video features and video tokens do not match: tokens: {n_video_tokens}, features {n_video_features}" )  # pylint: disable=line-too-long
+                        f"Video features and video tokens do not match: tokens: {n_video_tokens}, features {n_video_features}"
+                    )
 
                 mask = input_ids == self.config.video_token_id
                 mask_unsqueezed = mask.unsqueeze(-1)
@@ -469,7 +466,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             shift_labels = shift_labels.to(shift_logits.device)
             loss = loss_fct(shift_logits, shift_labels) * token_loss_weight
 
-            shift_image_tokens_2d = (labels[..., 1:].contiguous() == self.config.image_token_id)  # (B, L-1)
+            shift_image_tokens_2d = (labels[..., 1:].contiguous() == self.config.image_token_id) # (B, L-1)
             shifted_image_embeds = image_embeds[:, :-1, :].contiguous()  # (B, L-1, D)
             masked_image_embeds = shifted_image_embeds[shift_image_tokens_2d]  # (num_image_tokens, D)
 
@@ -505,6 +502,8 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             attentions=outputs.attentions,
             rope_deltas=self.rope_deltas,
         )
+
+
 
     def _sample(
         self,
@@ -584,7 +583,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             is_compileable = model_kwargs["past_key_values"].is_compileable and self._supports_static_cache
             is_compileable = is_compileable and not self.generation_config.disable_compile
             if is_compileable and (
-                self.device.type in ["cuda", "npu"] or generation_config.compile_config._compile_all_devices
+                self.device.type == "cuda" or generation_config.compile_config._compile_all_devices
             ):
                 os.environ["TOKENIZERS_PARALLELISM"] = "0"
                 model_forward = self.get_compiled_call(generation_config.compile_config)
@@ -601,20 +600,10 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
             # prepare prefilled embeds
-            model_inputs.update(
-                self.prepare_prefilled_image_embeds(
-                    len(output_image_embeddings),
-                    num_img_tokens,
-                    is_sampling_img,
-                    **model_kwargs))
+            model_inputs.update(self.prepare_prefilled_image_embeds(len(output_image_embeddings), num_img_tokens, is_sampling_img, **model_kwargs))
 
             # parse position_ids from model_kwargs
-            model_inputs.update(
-                self.prepare_image_position_ids(
-                    input_ids,
-                    generation_image_grid_thw,
-                    is_sampling_img,
-                    **model_kwargs))
+            model_inputs.update(self.prepare_image_position_ids(input_ids, generation_image_grid_thw, is_sampling_img, **model_kwargs))
 
             # prepare variable output controls (note: some models won't accept all output controls)
             model_inputs.update({"output_attentions": output_attentions} if output_attentions else {})
@@ -682,7 +671,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             if has_eos_stopping_criteria:
                 next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-            # TODO: support batch image sample
+            #TODO: support batch image sample
             if num_img_tokens is not None:
                 cur_img_tokens = (input_ids == self.config.vision_start_token_id).flip(dims=[1]).float().argmax(dim=1)
                 # check whether is sampling images
@@ -717,9 +706,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             streamer.end()
 
         # output the image embeddings
-        output_image_embeddings = torch.cat(
-            output_image_embeddings,
-            dim=1) if len(output_image_embeddings) > 0 else None
+        output_image_embeddings = torch.cat(output_image_embeddings, dim=1) if len(output_image_embeddings) > 0 else None
 
         if return_dict_in_generate:
             return GenerateDecoderOnlyAll2AllOutput(
@@ -734,19 +721,23 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
         else:
             return input_ids
 
+
     def prepare_prefilled_image_embeds(self, cur_image_tokens, num_img_tokens, is_sampling_img, **model_kwargs):
         if cur_image_tokens == 0 or cur_image_tokens > num_img_tokens or not bool(is_sampling_img):
             return {}
         # TODO: support batch image sample
-        image_idx = torch.tensor([cur_image_tokens - 1]).to(self.device).long().unsqueeze(0)
+        image_idx = torch.tensor([cur_image_tokens-1]).to(self.device).long().unsqueeze(0)
         inputs_embeds = self.image_prefill_embeds(image_idx)
         return {"inputs_embeds": inputs_embeds}
+
 
     def get_default_image_grid_thw(self,):
         return torch.tensor([[1, 18, 18]]).to(self.device)
 
+
     def get_num_image_tokens(self, image_grid_thw):
         return int(torch.prod(image_grid_thw, dim=1).sum() // 4)
+
 
     def _validate_model_kwargs(self, model_kwargs: Dict[str, Any]):
         num_img_tokens = model_kwargs.pop("generation_image_grid_thw", None)
@@ -921,8 +912,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
             return dict_to_expand
 
         # input_ids is required for expanding visual inputs
-        # If input_ids is unavailable, visual inputs will not be used; therefore,
-        # there is no need to expand visual inputs.
+        # If input_ids is unavailable, visual inputs will not be used; therefore, there is no need to expand visual inputs.
         if input_ids is not None and input_ids.numel() != 0:
             model_kwargs = _expand_dict_for_generation_visual(model_kwargs)
 
@@ -940,6 +930,7 @@ class Qwen2_5_VLForConditionalGeneration(Qwen2_5_VLPreTrainedModel, GenerationMi
 
 
 __all__ = ["Qwen2_5_VLForConditionalGeneration", "Qwen2_5_VLModel", "Qwen2_5_VLPreTrainedModel"]
+
 
 
 class Qwen2_5_VLVideosProcessorKwargs(VideosKwargs, total=False):
@@ -1048,10 +1039,8 @@ class Qwen2_5_VLProcessor(ProcessorMixin):
                 second_per_grid_ts = [self.image_processor.temporal_patch_size / tmp for tmp in fps]
             else:
                 raise ValueError(
-                    f"The length of fps ({
-                        len(fps) if hasattr(
-                            fps, '__len__') else fps}) must be equal to the length of video_grid_thw ({
-                        len(video_grid_thw)}) or fps should be a single number." )
+                    f"The length of fps ({len(fps) if hasattr(fps, '__len__') else fps}) must be equal to the length of video_grid_thw ({len(video_grid_thw)}) or fps should be a single number."
+                )
             videos_inputs.update({"second_per_grid_ts": second_per_grid_ts})
 
         else:

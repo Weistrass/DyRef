@@ -1,16 +1,9 @@
-# pylint: disable=invalid-name
-
-from typing import Tuple
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from ..core.gradient import gradient_checkpoint_forward
-from .wan_video_dit import (CrossAttention, DiTBlock, Head, modulate,
-                            precompute_freqs_cis_3d, rearrange,
-                            sinusoidal_embedding_1d)
+from typing import Tuple
+from .wan_video_dit import rearrange, precompute_freqs_cis_3d, DiTBlock, Head, CrossAttention, modulate, sinusoidal_embedding_1d
 
 
 def torch_dfs(model: nn.Module, parent_name='root'):
@@ -61,8 +54,7 @@ def rope_precompute(x, grid_sizes, freqs, start=None):
             if seq_len > 0:
                 if t_f > 0:
                     factor_f, factor_h, factor_w = (t_f / seq_f).item(), (t_h / seq_h).item(), (t_w / seq_w).item()
-                    # Generate a list of seq_f integers starting from f_o and ending at
-                    # math.ceil(factor_f * seq_f.item() + f_o.item())
+                    # Generate a list of seq_f integers starting from f_o and ending at math.ceil(factor_f * seq_f.item() + f_o.item())
                     if f_o >= 0:
                         f_sam = np.linspace(f_o.item(), (t_f + f_o).item() - 1, seq_f).astype(int).tolist()
                     else:
@@ -178,9 +170,7 @@ class MotionEncoder_tc(nn.Module):
 
 class FramePackMotioner(nn.Module):
 
-    def __init__(self, inner_dim=1024, num_heads=16, zip_frame_buckets=None, drop_mode="drop", *args, **kwargs):
-        if zip_frame_buckets is None:
-            zip_frame_buckets = []
+    def __init__(self, inner_dim=1024, num_heads=16, zip_frame_buckets=[1, 2, 16], drop_mode="drop", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.proj = nn.Conv3d(16, inner_dim, kernel_size=(1, 2, 2), stride=(1, 2, 2))
         self.proj_2x = nn.Conv3d(16, inner_dim, kernel_size=(2, 4, 4), stride=(2, 4, 4))
@@ -198,13 +188,7 @@ class FramePackMotioner(nn.Module):
         mot_remb = []
         for m in motion_latents:
             lat_height, lat_width = m.shape[2], m.shape[3]
-            padd_lat = torch.zeros(
-                16,
-                self.zip_frame_buckets.sum(),
-                lat_height,
-                lat_width).to(
-                device=m.device,
-                dtype=m.dtype)
+            padd_lat = torch.zeros(16, self.zip_frame_buckets.sum(), lat_height, lat_width).to(device=m.device, dtype=m.dtype)
             overlap_frame = min(padd_lat.shape[1], m.shape[1])
             if overlap_frame > 0:
                 padd_lat[:, -overlap_frame:] = m[:, -overlap_frame:]
@@ -214,9 +198,9 @@ class FramePackMotioner(nn.Module):
                 padd_lat[:, -zero_end_frame:] = 0
 
             padd_lat = padd_lat.unsqueeze(0)
-            clean_latents_4x, clean_latents_2x, clean_latents_post = \
-                padd_lat[:, :, -self.zip_frame_buckets.sum():, :, :].split(
-                    list(self.zip_frame_buckets)[::-1], dim=2)  # 16, 2 ,1
+            clean_latents_4x, clean_latents_2x, clean_latents_post = padd_lat[:, :, -self.zip_frame_buckets.sum():, :, :].split(
+                list(self.zip_frame_buckets)[::-1], dim=2
+            )  # 16, 2 ,1
 
             # patchfy
             clean_latents_post = self.proj(clean_latents_post).flatten(2).transpose(1, 2)
@@ -233,19 +217,19 @@ class FramePackMotioner(nn.Module):
             start_time_id = -(self.zip_frame_buckets[:1].sum())
             end_time_id = start_time_id + self.zip_frame_buckets[0]
             grid_sizes = [] if add_last_motion < 2 and self.drop_mode == "drop" else \
-                [
-                [torch.tensor([start_time_id, 0, 0]).unsqueeze(0).repeat(1, 1),
-                 torch.tensor([end_time_id, lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1),
-                 torch.tensor([self.zip_frame_buckets[0], lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1), ]
-            ]
+                        [
+                            [torch.tensor([start_time_id, 0, 0]).unsqueeze(0).repeat(1, 1),
+                            torch.tensor([end_time_id, lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1),
+                            torch.tensor([self.zip_frame_buckets[0], lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1), ]
+                        ]
 
             start_time_id = -(self.zip_frame_buckets[:2].sum())
             end_time_id = start_time_id + self.zip_frame_buckets[1] // 2
             grid_sizes_2x = [] if add_last_motion < 1 and self.drop_mode == "drop" else \
-                [
+            [
                 [torch.tensor([start_time_id, 0, 0]).unsqueeze(0).repeat(1, 1),
-                 torch.tensor([end_time_id, lat_height // 4, lat_width // 4]).unsqueeze(0).repeat(1, 1),
-                 torch.tensor([self.zip_frame_buckets[1], lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1), ]
+                torch.tensor([end_time_id, lat_height // 4, lat_width // 4]).unsqueeze(0).repeat(1, 1),
+                torch.tensor([self.zip_frame_buckets[1], lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1), ]
             ]
 
             start_time_id = -(self.zip_frame_buckets[:3].sum())
@@ -254,9 +238,7 @@ class FramePackMotioner(nn.Module):
                 [
                     torch.tensor([start_time_id, 0, 0]).unsqueeze(0).repeat(1, 1),
                     torch.tensor([end_time_id, lat_height // 8, lat_width // 8]).unsqueeze(0).repeat(1, 1),
-                    torch.tensor(
-                        [self.zip_frame_buckets[2], lat_height // 2, lat_width // 2]
-                    ).unsqueeze(0).repeat(1, 1),
+                    torch.tensor([self.zip_frame_buckets[2], lat_height // 2, lat_width // 2]).unsqueeze(0).repeat(1, 1),
                 ]
             ]
 
@@ -304,12 +286,10 @@ class AudioInjector_WAN(nn.Module):
         all_modules_names,
         dim=2048,
         num_heads=32,
-        inject_layer=None,
+        inject_layer=[0, 27],
         enable_adain=False,
         adain_dim=2048,
     ):
-        if inject_layer is None:
-            inject_layer = []
         super().__init__()
         self.injected_block_id = {}
         audio_injector_id = 0
@@ -335,8 +315,7 @@ class AudioInjector_WAN(nn.Module):
             eps=1e-6,
         ) for _ in range(audio_injector_id)])
         if enable_adain:
-            self.injector_adain_layers = nn.ModuleList(
-                [AdaLayerNorm(output_dim=dim * 2, embedding_dim=adain_dim) for _ in range(audio_injector_id)])
+            self.injector_adain_layers = nn.ModuleList([AdaLayerNorm(output_dim=dim * 2, embedding_dim=adain_dim) for _ in range(audio_injector_id)])
 
 
 class CausalAudioEncoder(nn.Module):
@@ -364,8 +343,10 @@ class WanS2VDiTBlock(DiTBlock):
     def forward(self, x, context, t_mod, seq_len_x, freqs):
         t_mod = (self.modulation.unsqueeze(2).to(dtype=t_mod.dtype, device=t_mod.device) + t_mod).chunk(6, dim=1)
         # t_mod[:, :, 0] for x, t_mod[:, :, 1] for other like ref, motion, etc.
-        t_mod = [ torch.cat([element[:, :, 0].expand(1, seq_len_x, x.shape[-1]), element[:, :,
-                            1].expand(1, x.shape[1] - seq_len_x, x.shape[-1])], dim=1) for element in t_mod ]
+        t_mod = [
+            torch.cat([element[:, :, 0].expand(1, seq_len_x, x.shape[-1]), element[:, :, 1].expand(1, x.shape[1] - seq_len_x, x.shape[-1])], dim=1)
+            for element in t_mod
+        ]
         shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = t_mod
         input_x = modulate(self.norm1(x), shift_msa, scale_msa)
         x = self.gate(x, gate_msa, self.self_attn(input_x, freqs))
@@ -393,7 +374,7 @@ class WanS2VModel(torch.nn.Module):
         audio_dim: int,
         num_audio_token: int,
         enable_adain: bool = True,
-        audio_inject_layers: list = None,
+        audio_inject_layers: list = [0, 4, 8, 12, 16, 20, 24, 27, 30, 33, 36, 39],
         zero_timestep: bool = True,
         add_last_motion: bool = True,
         framepack_drop_mode: str = "padd",
@@ -402,8 +383,6 @@ class WanS2VModel(torch.nn.Module):
         seperated_timestep: bool = False,
         require_clip_embedding: bool = False,
     ):
-        if audio_inject_layers is None:
-            audio_inject_layers = []
         super().__init__()
         self.dim = dim
         self.in_dim = in_dim
@@ -428,8 +407,7 @@ class WanS2VModel(torch.nn.Module):
         self.freqs = torch.cat(precompute_freqs_cis_3d(dim // num_heads), dim=1)
 
         self.cond_encoder = nn.Conv3d(cond_dim, dim, kernel_size=patch_size, stride=patch_size)
-        self.casual_audio_encoder = CausalAudioEncoder(
-            dim=audio_dim, out_dim=dim, num_token=num_audio_token, need_global=enable_adain)
+        self.casual_audio_encoder = CausalAudioEncoder(dim=audio_dim, out_dim=dim, num_token=num_audio_token, need_global=enable_adain)
         all_modules, all_modules_names = torch_dfs(self.blocks, parent_name="root.transformer_blocks")
         self.audio_injector = AudioInjector_WAN(
             all_modules,
@@ -441,9 +419,7 @@ class WanS2VModel(torch.nn.Module):
             adain_dim=dim,
         )
         self.trainable_cond_mask = nn.Embedding(3, dim)
-        self.frame_packer = FramePackMotioner(
-            inner_dim=dim, num_heads=num_heads, zip_frame_buckets=[
-                1, 2, 16], drop_mode=framepack_drop_mode)
+        self.frame_packer = FramePackMotioner(inner_dim=dim, num_heads=num_heads, zip_frame_buckets=[1, 2, 16], drop_mode=framepack_drop_mode)
 
     def patchify(self, x: torch.Tensor):
         grid_size = x.shape[2:]
@@ -471,26 +447,16 @@ class WanS2VModel(torch.nn.Module):
 
     def inject_motion(self, x, rope_embs, mask_input, motion_latents, drop_motion_frames=True, add_last_motion=2):
         # inject the motion frames token to the hidden states
-        mot, mot_remb = self.process_motion_frame_pack(
-            motion_latents, drop_motion_frames=drop_motion_frames, add_last_motion=add_last_motion)
+        mot, mot_remb = self.process_motion_frame_pack(motion_latents, drop_motion_frames=drop_motion_frames, add_last_motion=add_last_motion)
         if len(mot) > 0:
             x = torch.cat([x, mot[0]], dim=1)
             rope_embs = torch.cat([rope_embs, mot_remb[0]], dim=1)
             mask_input = torch.cat(
-                [mask_input, 2 * torch.ones(
-                    [1, x.shape[1] - mask_input.shape[1]],
-                    device=mask_input.device, dtype=mask_input.dtype)],
-                dim=1)
+                [mask_input, 2 * torch.ones([1, x.shape[1] - mask_input.shape[1]], device=mask_input.device, dtype=mask_input.dtype)], dim=1
+            )
         return x, rope_embs, mask_input
 
-    def after_transformer_block(
-            self,
-            block_idx,
-            hidden_states,
-            audio_emb_global,
-            audio_emb,
-            original_seq_len,
-            use_unified_sequence_parallel=False):
+    def after_transformer_block(self, block_idx, hidden_states, audio_emb_global, audio_emb, original_seq_len, use_unified_sequence_parallel=False):
         if block_idx in self.audio_injector.injected_block_id.keys():
             audio_attn_id = self.audio_injector.injected_block_id[block_idx]
             num_frames = audio_emb.shape[1]
@@ -502,8 +468,7 @@ class WanS2VModel(torch.nn.Module):
             input_hidden_states = rearrange(input_hidden_states, "b (t n) c -> (b t) n c", t=num_frames)
 
             audio_emb_global = rearrange(audio_emb_global, "b t n c -> (b t) n c")
-            adain_hidden_states = self.audio_injector.injector_adain_layers[audio_attn_id](
-                input_hidden_states, temb=audio_emb_global[:, 0])
+            adain_hidden_states = self.audio_injector.injector_adain_layers[audio_attn_id](input_hidden_states, temb=audio_emb_global[:, 0])
             attn_hidden_states = adain_hidden_states
 
             audio_emb = rearrange(audio_emb, "b t n c -> (b t) n c", t=num_frames)
@@ -512,17 +477,11 @@ class WanS2VModel(torch.nn.Module):
             residual_out = rearrange(residual_out, "(b t) n c -> b (t n) c", t=num_frames)
             hidden_states[:, :original_seq_len] = hidden_states[:, :original_seq_len] + residual_out
             if use_unified_sequence_parallel:
-                from xfuser.core.distributed import (
-                    get_sequence_parallel_rank,
-                    get_sequence_parallel_world_size)
-                hidden_states = torch.chunk(
-                    hidden_states, get_sequence_parallel_world_size(), dim=1)[
-                    get_sequence_parallel_rank()]
+                from xfuser.core.distributed import get_sequence_parallel_world_size, get_sequence_parallel_rank
+                hidden_states = torch.chunk(hidden_states, get_sequence_parallel_world_size(), dim=1)[get_sequence_parallel_rank()]
         return hidden_states
 
-    def cal_audio_emb(self, audio_input, motion_frames=None):
-        if motion_frames is None:
-            motion_frames = []
+    def cal_audio_emb(self, audio_input, motion_frames=[73, 19]):
         audio_input = torch.cat([audio_input[..., 0:1].repeat(1, 1, 1, motion_frames[0]), audio_input], dim=-1)
         audio_emb_global, audio_emb = self.casual_audio_encoder(audio_input)
         audio_emb_global = audio_emb_global[:, motion_frames[1]:].clone()
@@ -563,29 +522,19 @@ class WanS2VModel(torch.nn.Module):
 
         # x and pose_cond
         pose_cond = torch.zeros_like(x) if pose_cond is None else pose_cond
-        x, (f, h, w) = self.patchify(self.patch_embedding(x) +
-                                     self.cond_encoder(pose_cond))  # torch.Size([1, 29120, 5120])
+        x, (f, h, w) = self.patchify(self.patch_embedding(x) + self.cond_encoder(pose_cond))  # torch.Size([1, 29120, 5120])
         seq_len_x = x.shape[1]
 
         # reference image
-        ref_latents, (rf, rh, rw) = self.patchify(self.patch_embedding(
-            origin_ref_latents))  # torch.Size([1, 1456, 5120])
+        ref_latents, (rf, rh, rw) = self.patchify(self.patch_embedding(origin_ref_latents))  # torch.Size([1, 1456, 5120])
         grid_sizes = self.get_grid_sizes((f, h, w), (rf, rh, rw))
         x = torch.cat([x, ref_latents], dim=1)
         # mask
-        mask = torch.cat([torch.zeros([1, seq_len_x]), torch.ones(
-            [1, ref_latents.shape[1]])], dim=1).to(torch.long).to(x.device)
+        mask = torch.cat([torch.zeros([1, seq_len_x]), torch.ones([1, ref_latents.shape[1]])], dim=1).to(torch.long).to(x.device)
         # freqs
         pre_compute_freqs = rope_precompute(
-            x.detach().view(
-                1,
-                x.size(1),
-                self.num_heads,
-                self.dim //
-                self.num_heads),
-            grid_sizes,
-            self.freqs,
-            start=None )
+            x.detach().view(1, x.size(1), self.num_heads, self.dim // self.num_heads), grid_sizes, self.freqs, start=None
+        )
         # motion
         x, pre_compute_freqs, mask = self.inject_motion(x, pre_compute_freqs, mask, motion_latents, add_last_motion=2)
 
@@ -596,19 +545,46 @@ class WanS2VModel(torch.nn.Module):
         t = self.time_embedding(sinusoidal_embedding_1d(self.freq_dim, timestep))
         t_mod = self.time_projection(t).unflatten(1, (6, self.dim)).unsqueeze(2).transpose(0, 2)
 
+        def create_custom_forward(module):
+            def custom_forward(*inputs):
+                return module(*inputs)
+            return custom_forward
+
         for block_id, block in enumerate(self.blocks):
-            x = gradient_checkpoint_forward(
-                block,
-                use_gradient_checkpointing,
-                use_gradient_checkpointing_offload,
-                x, context, t_mod, seq_len_x, pre_compute_freqs[0]
-            )
-            x = gradient_checkpoint_forward(
-                lambda x: self.after_transformer_block(block_id, x, audio_emb_global, merged_audio_emb, seq_len_x),
-                use_gradient_checkpointing,
-                use_gradient_checkpointing_offload,
-                x
-            )
+            if use_gradient_checkpointing_offload:
+                with torch.autograd.graph.save_on_cpu():
+                    x = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(block),
+                        x,
+                        context,
+                        t_mod,
+                        seq_len_x,
+                        pre_compute_freqs[0],
+                        use_reentrant=False,
+                    )
+                    x = torch.utils.checkpoint.checkpoint(
+                        create_custom_forward(lambda x: self.after_transformer_block(block_id, x, audio_emb_global, merged_audio_emb, seq_len_x)),
+                        x,
+                        use_reentrant=False,
+                    )
+            elif use_gradient_checkpointing:
+                x = torch.utils.checkpoint.checkpoint(
+                    create_custom_forward(block),
+                    x,
+                    context,
+                    t_mod,
+                    seq_len_x,
+                    pre_compute_freqs[0],
+                    use_reentrant=False,
+                )
+                x = torch.utils.checkpoint.checkpoint(
+                    create_custom_forward(lambda x: self.after_transformer_block(block_id, x, audio_emb_global, merged_audio_emb, seq_len_x)),
+                    x,
+                    use_reentrant=False,
+                )
+            else:
+                x = block(x, context, t_mod, seq_len_x, pre_compute_freqs[0])
+                x = self.after_transformer_block(block_id, x, audio_emb_global, merged_audio_emb, seq_len_x)
 
         x = x[:, :seq_len_x]
         x = self.head(x, t[:-1])

@@ -1,5 +1,4 @@
 import torch
-
 from .general_modules import TemporalTimesteps
 
 
@@ -24,16 +23,12 @@ class SingleValueEncoder(torch.nn.Module):
     def __init__(self, dim_in=256, dim_out=4096, prefer_len=32, computation_device=None):
         super().__init__()
         self.prefer_len = prefer_len
-        self.prefer_proj = TemporalTimesteps(
-            num_channels=dim_in,
-            flip_sin_to_cos=True,
-            downscale_freq_shift=0,
-            computation_device=computation_device)
+        self.prefer_proj = TemporalTimesteps(num_channels=dim_in, flip_sin_to_cos=True, downscale_freq_shift=0, computation_device=computation_device)
         self.prefer_value_embedder = torch.nn.Sequential(
             torch.nn.Linear(dim_in, dim_out), torch.nn.SiLU(), torch.nn.Linear(dim_out, dim_out)
         )
         self.positional_embedding = torch.nn.Parameter(
-            torch.randn(self.prefer_len, dim_out)
+            torch.randn(self.prefer_len, dim_out) 
         )
 
     def forward(self, value, dtype):

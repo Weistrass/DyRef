@@ -1,13 +1,12 @@
-# pylint: disable=invalid-name
-
-import math
-from functools import partial
 from typing import Optional
 
-import torch
+import torch, math
 import torch.nn
 from einops import rearrange
 from torch import nn
+from functools import partial
+from einops import rearrange
+
 
 
 def attention(q, k, v, attn_mask, mode="torch"):
@@ -17,23 +16,24 @@ def attention(q, k, v, attn_mask, mode="torch"):
     x = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
     x = rearrange(x, "b n s d -> b s (n d)")
     return x
+    
 
 
 class MLP(nn.Module):
     """MLP as used in Vision Transformer, MLP-Mixer and related networks"""
 
     def __init__(
-        self, 
-        in_channels, 
-        hidden_channels=None, 
-        out_features=None, 
-        act_layer=nn.GELU, 
-        norm_layer=None, 
-        bias=True, 
-        drop=0.0, 
-        use_conv=False, 
-        device=None, 
-        dtype=None, 
+        self,
+        in_channels,
+        hidden_channels=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        norm_layer=None,
+        bias=True,
+        drop=0.0,
+        use_conv=False,
+        device=None,
+        dtype=None,
     ):
         super().__init__()
         out_features = out_features or in_channels
@@ -65,8 +65,8 @@ class MLP(nn.Module):
         x = self.fc2(x)
         x = self.drop2(x)
         return x
-
-
+    
+    
 class TextProjection(nn.Module):
     """
     Projects text embeddings. Also handles dropout for classifier-free guidance.
@@ -78,17 +78,17 @@ class TextProjection(nn.Module):
         factory_kwargs = {"dtype": dtype, "device": device}
         super().__init__()
         self.linear_1 = nn.Linear(
-            in_features=in_channels, 
-            out_features=hidden_size, 
-            bias=True, 
-            **factory_kwargs, 
+            in_features=in_channels,
+            out_features=hidden_size,
+            bias=True,
+            **factory_kwargs,
         )
         self.act_1 = act_layer()
         self.linear_2 = nn.Linear(
-            in_features=hidden_size, 
-            out_features=hidden_size, 
-            bias=True, 
-            **factory_kwargs, 
+            in_features=hidden_size,
+            out_features=hidden_size,
+            bias=True,
+            **factory_kwargs,
         )
 
     def forward(self, caption):
@@ -96,22 +96,22 @@ class TextProjection(nn.Module):
         hidden_states = self.act_1(hidden_states)
         hidden_states = self.linear_2(hidden_states)
         return hidden_states
-
-
+    
+    
 class TimestepEmbedder(nn.Module):
     """
     Embeds scalar timesteps into vector representations.
     """
 
     def __init__(
-        self, 
-        hidden_size, 
-        act_layer, 
-        frequency_embedding_size=256, 
-        max_period=10000, 
-        out_size=None, 
-        dtype=None, 
-        device=None, 
+        self,
+        hidden_size,
+        act_layer,
+        frequency_embedding_size=256,
+        max_period=10000,
+        out_size=None,
+        dtype=None,
+        device=None,
     ):
         factory_kwargs = {"dtype": dtype, "device": device}
         super().__init__()
@@ -123,9 +123,9 @@ class TimestepEmbedder(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(
                 frequency_embedding_size, hidden_size, bias=True, **factory_kwargs
-            ), 
-            act_layer(), 
-            nn.Linear(hidden_size, out_size, bias=True, **factory_kwargs), 
+            ),
+            act_layer(),
+            nn.Linear(hidden_size, out_size, bias=True, **factory_kwargs),
         )
         nn.init.normal_(self.mlp[0].weight, std=0.02)  # type: ignore
         nn.init.normal_(self.mlp[2].weight, std=0.02)  # type: ignore
@@ -165,8 +165,8 @@ class TimestepEmbedder(nn.Module):
         ).type(t.dtype)  # type: ignore
         t_emb = self.mlp(t_freq)
         return t_emb
-
-
+    
+    
 def apply_gate(x, gate=None, tanh=False):
     """AI is creating summary for apply_gate
 
@@ -188,12 +188,12 @@ def apply_gate(x, gate=None, tanh=False):
 
 class RMSNorm(nn.Module):
     def __init__(
-        self, 
-        dim: int, 
-        elementwise_affine=True, 
-        eps: float = 1e-6, 
-        device=None, 
-        dtype=None, 
+        self,
+        dim: int,
+        elementwise_affine=True,
+        eps: float = 1e-6,
+        device=None,
+        dtype=None,
     ):
         """
         Initialize the RMSNorm normalization layer.
@@ -281,21 +281,20 @@ def get_activation_layer(act_type):
     else:
         raise ValueError(f"Unknown activation type: {act_type}")
 
-
 class IndividualTokenRefinerBlock(torch.nn.Module):
     def __init__(
-        self, 
-        hidden_size, 
-        heads_num, 
-        mlp_width_ratio: str = 4.0, 
-        mlp_drop_rate: float = 0.0, 
-        act_type: str = "silu", 
-        qk_norm: bool = False, 
-        qk_norm_type: str = "layer", 
-        qkv_bias: bool = True, 
-        need_CA: bool = False, 
-        dtype: Optional[torch.dtype] = None, 
-        device: Optional[torch.device] = None, 
+        self,
+        hidden_size,
+        heads_num,
+        mlp_width_ratio: str = 4.0,
+        mlp_drop_rate: float = 0.0,
+        act_type: str = "silu",
+        qk_norm: bool = False,
+        qk_norm_type: str = "layer",
+        qkv_bias: bool = True,
+        need_CA: bool = False,
+        dtype: Optional[torch.dtype] = None,
+        device: Optional[torch.device] = None,
     ):
         factory_kwargs = {"device": device, "dtype": dtype}
         super().__init__()
@@ -330,38 +329,38 @@ class IndividualTokenRefinerBlock(torch.nn.Module):
         )
         act_layer = get_activation_layer(act_type)
         self.mlp = MLP(
-            in_channels=hidden_size, 
-            hidden_channels=mlp_hidden_dim, 
-            act_layer=act_layer, 
-            drop=mlp_drop_rate, 
-            **factory_kwargs, 
+            in_channels=hidden_size,
+            hidden_channels=mlp_hidden_dim,
+            act_layer=act_layer,
+            drop=mlp_drop_rate,
+            **factory_kwargs,
         )
 
         self.adaLN_modulation = nn.Sequential(
-            act_layer(), 
-            nn.Linear(hidden_size, 2 * hidden_size, bias=True, **factory_kwargs), 
+            act_layer(),
+            nn.Linear(hidden_size, 2 * hidden_size, bias=True, **factory_kwargs),
         )
 
         if self.need_CA:
-            self.cross_attnblock = CrossAttnBlock(hidden_size=hidden_size, 
-                                                  heads_num=heads_num, 
-                                                  mlp_width_ratio=mlp_width_ratio, 
-                                                  mlp_drop_rate=mlp_drop_rate, 
-                                                  act_type=act_type, 
-                                                  qk_norm=qk_norm, 
-                                                  qk_norm_type=qk_norm_type, 
-                                                  qkv_bias=qkv_bias, 
-                                                  **factory_kwargs, )
+            self.cross_attnblock=CrossAttnBlock(hidden_size=hidden_size,
+                        heads_num=heads_num,
+                        mlp_width_ratio=mlp_width_ratio,
+                        mlp_drop_rate=mlp_drop_rate,
+                        act_type=act_type,
+                        qk_norm=qk_norm,
+                        qk_norm_type=qk_norm_type,
+                        qkv_bias=qkv_bias,
+                        **factory_kwargs,)
         # Zero-initialize the modulation
         nn.init.zeros_(self.adaLN_modulation[1].weight)
         nn.init.zeros_(self.adaLN_modulation[1].bias)
 
     def forward(
-        self, 
-        x: torch.Tensor, 
+        self,
+        x: torch.Tensor,
         c: torch.Tensor,  # timestep_aware_representations + context_aware_representations
-        attn_mask: torch.Tensor = None, 
-        y: torch.Tensor = None, 
+        attn_mask: torch.Tensor = None,
+        y: torch.Tensor = None,
     ):
         gate_msa, gate_mlp = self.adaLN_modulation(c).chunk(2, dim=1)
 
@@ -376,7 +375,7 @@ class IndividualTokenRefinerBlock(torch.nn.Module):
         attn = attention(q, k, v, mode="torch", attn_mask=attn_mask)
 
         x = x + apply_gate(self.self_attn_proj(attn), gate_msa)
-
+        
         if self.need_CA:
             x = self.cross_attnblock(x, c, attn_mask, y)
 
@@ -386,19 +385,21 @@ class IndividualTokenRefinerBlock(torch.nn.Module):
         return x
 
 
+
+
 class CrossAttnBlock(torch.nn.Module):
     def __init__(
-        self, 
-        hidden_size, 
-        heads_num, 
-        mlp_width_ratio: str = 4.0, 
-        mlp_drop_rate: float = 0.0, 
-        act_type: str = "silu", 
-        qk_norm: bool = False, 
-        qk_norm_type: str = "layer", 
-        qkv_bias: bool = True, 
-        dtype: Optional[torch.dtype] = None, 
-        device: Optional[torch.device] = None, 
+        self,
+        hidden_size,
+        heads_num,
+        mlp_width_ratio: str = 4.0,
+        mlp_drop_rate: float = 0.0,
+        act_type: str = "silu",
+        qk_norm: bool = False,
+        qk_norm_type: str = "layer",
+        qkv_bias: bool = True,
+        dtype: Optional[torch.dtype] = None,
+        device: Optional[torch.device] = None,
     ):
         factory_kwargs = {"device": device, "dtype": dtype}
         super().__init__()
@@ -415,7 +416,7 @@ class CrossAttnBlock(torch.nn.Module):
             hidden_size, hidden_size, bias=qkv_bias, **factory_kwargs
         )
         self.self_attn_kv = nn.Linear(
-            hidden_size, hidden_size * 2, bias=qkv_bias, **factory_kwargs
+            hidden_size, hidden_size*2, bias=qkv_bias, **factory_kwargs
         )
         qk_norm_layer = get_norm_layer(qk_norm_type)
         self.self_attn_q_norm = (
@@ -438,20 +439,20 @@ class CrossAttnBlock(torch.nn.Module):
         act_layer = get_activation_layer(act_type)
 
         self.adaLN_modulation = nn.Sequential(
-            act_layer(), 
-            nn.Linear(hidden_size, 2 * hidden_size, bias=True, **factory_kwargs), 
+            act_layer(),
+            nn.Linear(hidden_size, 2 * hidden_size, bias=True, **factory_kwargs),
         )
         # Zero-initialize the modulation
         nn.init.zeros_(self.adaLN_modulation[1].weight)
         nn.init.zeros_(self.adaLN_modulation[1].bias)
 
     def forward(
-        self, 
-        x: torch.Tensor, 
+        self,
+        x: torch.Tensor,
         c: torch.Tensor,  # timestep_aware_representations + context_aware_representations
-        attn_mask: torch.Tensor = None, 
-        y: torch.Tensor=None, 
-
+        attn_mask: torch.Tensor = None,
+        y: torch.Tensor=None,
+        
     ):
         gate_msa, gate_mlp = self.adaLN_modulation(c).chunk(2, dim=1)
 
@@ -473,50 +474,52 @@ class CrossAttnBlock(torch.nn.Module):
         return x
 
 
+
 class IndividualTokenRefiner(torch.nn.Module):
     def __init__(
-        self, 
-        hidden_size, 
-        heads_num, 
-        depth, 
-        mlp_width_ratio: float = 4.0, 
-        mlp_drop_rate: float = 0.0, 
-        act_type: str = "silu", 
-        qk_norm: bool = False, 
-        qk_norm_type: str = "layer", 
-        qkv_bias: bool = True, 
-        need_CA: bool = False, 
-        dtype: Optional[torch.dtype] = None, 
-        device: Optional[torch.device] = None, 
-    ):
-
+        self,
+        hidden_size,
+        heads_num,
+        depth,
+        mlp_width_ratio: float = 4.0,
+        mlp_drop_rate: float = 0.0,
+        act_type: str = "silu",
+        qk_norm: bool = False,
+        qk_norm_type: str = "layer",
+        qkv_bias: bool = True,
+        need_CA:bool=False,
+        dtype: Optional[torch.dtype] = None,
+        device: Optional[torch.device] = None,
+    ):  
+        
         factory_kwargs = {"device": device, "dtype": dtype}
         super().__init__()
         self.need_CA = need_CA
         self.blocks = nn.ModuleList(
             [
                 IndividualTokenRefinerBlock(
-                    hidden_size=hidden_size, 
-                    heads_num=heads_num, 
-                    mlp_width_ratio=mlp_width_ratio, 
-                    mlp_drop_rate=mlp_drop_rate, 
-                    act_type=act_type, 
-                    qk_norm=qk_norm, 
-                    qk_norm_type=qk_norm_type, 
-                    qkv_bias=qkv_bias, 
-                    need_CA=self.need_CA, 
-                    **factory_kwargs, 
+                    hidden_size=hidden_size,
+                    heads_num=heads_num,
+                    mlp_width_ratio=mlp_width_ratio,
+                    mlp_drop_rate=mlp_drop_rate,
+                    act_type=act_type,
+                    qk_norm=qk_norm,
+                    qk_norm_type=qk_norm_type,
+                    qkv_bias=qkv_bias,
+                    need_CA=self.need_CA,
+                    **factory_kwargs,
                 )
                 for _ in range(depth)
             ]
         )
 
+
     def forward(
-        self, 
-        x: torch.Tensor, 
-        c: torch.LongTensor, 
-        mask: Optional[torch.Tensor] = None, 
-        y: torch.Tensor = None, 
+        self,
+        x: torch.Tensor,
+        c: torch.LongTensor,
+        mask: Optional[torch.Tensor] = None,
+        y:torch.Tensor=None,
     ):
         self_attn_mask = None
         if mask is not None:
@@ -533,9 +536,10 @@ class IndividualTokenRefiner(torch.nn.Module):
             self_attn_mask = (self_attn_mask_1 & self_attn_mask_2).bool()
             # avoids self-attention weight being NaN for padding tokens
             self_attn_mask[:, :, :, 0] = True
-
+        
+        
         for block in self.blocks:
-            x = block(x, c, self_attn_mask, y)
+            x = block(x, c, self_attn_mask,y)
 
         return x
 
@@ -544,23 +548,22 @@ class SingleTokenRefiner(torch.nn.Module):
     """
     A single token refiner block for llm text embedding refine.
     """
-
     def __init__(
-        self, 
-        in_channels, 
-        hidden_size, 
-        heads_num, 
-        depth, 
-        mlp_width_ratio: float = 4.0, 
-        mlp_drop_rate: float = 0.0, 
-        act_type: str = "silu", 
-        qk_norm: bool = False, 
-        qk_norm_type: str = "layer", 
-        qkv_bias: bool = True, 
-        need_CA: bool = False, 
-        attn_mode: str = "torch", 
-        dtype: Optional[torch.dtype] = None, 
-        device: Optional[torch.device] = None, 
+        self,
+        in_channels,
+        hidden_size,
+        heads_num,
+        depth,
+        mlp_width_ratio: float = 4.0,
+        mlp_drop_rate: float = 0.0,
+        act_type: str = "silu",
+        qk_norm: bool = False,
+        qk_norm_type: str = "layer",
+        qkv_bias: bool = True,
+        need_CA:bool=False,
+        attn_mode: str = "torch",
+        dtype: Optional[torch.dtype] = None,
+        device: Optional[torch.device] = None,
     ):
         factory_kwargs = {"device": device, "dtype": dtype}
         super().__init__()
@@ -573,8 +576,8 @@ class SingleTokenRefiner(torch.nn.Module):
         )
         if self.need_CA:
             self.input_embedder_CA = nn.Linear(
-                in_channels, hidden_size, bias=True, **factory_kwargs
-            )
+            in_channels, hidden_size, bias=True, **factory_kwargs
+        )
 
         act_layer = get_activation_layer(act_type)
         # Build timestep embedding layer
@@ -585,25 +588,25 @@ class SingleTokenRefiner(torch.nn.Module):
         )
 
         self.individual_token_refiner = IndividualTokenRefiner(
-            hidden_size=hidden_size, 
-            heads_num=heads_num, 
-            depth=depth, 
-            mlp_width_ratio=mlp_width_ratio, 
-            mlp_drop_rate=mlp_drop_rate, 
-            act_type=act_type, 
-            qk_norm=qk_norm, 
-            qk_norm_type=qk_norm_type, 
-            qkv_bias=qkv_bias, 
-            need_CA=need_CA, 
-            **factory_kwargs, 
+            hidden_size=hidden_size,
+            heads_num=heads_num,
+            depth=depth,
+            mlp_width_ratio=mlp_width_ratio,
+            mlp_drop_rate=mlp_drop_rate,
+            act_type=act_type,
+            qk_norm=qk_norm,
+            qk_norm_type=qk_norm_type,
+            qkv_bias=qkv_bias,
+            need_CA=need_CA,
+            **factory_kwargs,
         )
 
     def forward(
-        self, 
-        x: torch.Tensor, 
-        t: torch.LongTensor, 
-        mask: Optional[torch.LongTensor] = None, 
-        y: torch.LongTensor=None, 
+        self,
+        x: torch.Tensor,
+        t: torch.LongTensor,
+        mask: Optional[torch.LongTensor] = None,
+        y: torch.LongTensor=None,
     ):
         timestep_aware_representations = self.t_embedder(t)
 
@@ -629,38 +632,32 @@ class SingleTokenRefiner(torch.nn.Module):
 
 class Qwen2Connector(torch.nn.Module):
     def __init__(
-        self, 
+        self,
         # biclip_dim=1024,
-        in_channels=3584, 
-        hidden_size=4096, 
-        heads_num=32, 
-        depth=2, 
-        need_CA=False, 
-        device=None, 
-        dtype=torch.bfloat16, 
+        in_channels=3584,
+        hidden_size=4096,
+        heads_num=32,
+        depth=2,
+        need_CA=False,
+        device=None,
+        dtype=torch.bfloat16,
     ):
         super().__init__()
-        factory_kwargs = {"device": device, "dtype": dtype}
+        factory_kwargs = {"device": device, "dtype":dtype}
 
-        self.S = SingleTokenRefiner(
-            in_channels=in_channels, 
-            hidden_size=hidden_size, 
-            heads_num=heads_num, 
-            depth=depth, 
-            need_CA=need_CA, 
-            **factory_kwargs)
-        self.global_proj_out = nn.Linear(in_channels, 768)
+        self.S =SingleTokenRefiner(in_channels=in_channels,hidden_size=hidden_size,heads_num=heads_num,depth=depth,need_CA=need_CA,**factory_kwargs)
+        self.global_proj_out=nn.Linear(in_channels,768)
 
         self.scale_factor = nn.Parameter(torch.zeros(1))
         with torch.no_grad():
             self.scale_factor.data += -(1 - 0.09)
 
-    def forward(self, x, t, mask):
+    def forward(self, x,t,mask):
         mask_float = mask.unsqueeze(-1)  # [b, s1, 1]
         x_mean = (x * mask_float).sum(
-            dim=1
-        ) / mask_float.sum(dim=1) * (1 + self.scale_factor.to(dtype=x.dtype, device=x.device))
+                dim=1
+            ) / mask_float.sum(dim=1) * (1 + self.scale_factor.to(dtype=x.dtype, device=x.device))
 
-        global_out = self.global_proj_out(x_mean)
-        encoder_hidden_states = self.S(x, t, mask)
-        return encoder_hidden_states, global_out
+        global_out=self.global_proj_out(x_mean)
+        encoder_hidden_states = self.S(x,t,mask)
+        return encoder_hidden_states,global_out

@@ -1,5 +1,5 @@
 import torch
-from transformers import T5Config, T5EncoderModel
+from transformers import T5EncoderModel, T5Config
 
 
 class FluxTextEncoderT5(T5EncoderModel):

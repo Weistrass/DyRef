@@ -1,12 +1,9 @@
-# pylint: disable=invalid-name
-
-from typing import List, Optional, Tuple, Union
-
 import torch
+from typing import List, Optional, Tuple, Union
 from torch import nn
 
-CACHE_T = 2
 
+CACHE_T = 2
 
 class QwenImageCausalConv3d(torch.nn.Conv3d):
     r"""
@@ -53,6 +50,7 @@ class QwenImageCausalConv3d(torch.nn.Conv3d):
         return super().forward(x)
 
 
+
 class QwenImageRMS_norm(nn.Module):
     r"""
     A custom RMS normalization layer.
@@ -76,8 +74,8 @@ class QwenImageRMS_norm(nn.Module):
         self.bias = nn.Parameter(torch.zeros(shape)) if bias else 0.0
 
     def forward(self, x):
-        return torch.nn.functional.normalize(x, dim=(1 if self.channel_first else -1)
-                                             ) * self.scale * self.gamma + self.bias
+        return torch.nn.functional.normalize(x, dim=(1 if self.channel_first else -1)) * self.scale * self.gamma + self.bias
+
 
 
 class QwenImageResidualBlock(nn.Module):
@@ -111,10 +109,8 @@ class QwenImageResidualBlock(nn.Module):
         self.conv2 = QwenImageCausalConv3d(out_dim, out_dim, 3, padding=1)
         self.conv_shortcut = QwenImageCausalConv3d(in_dim, out_dim, 1) if in_dim != out_dim else nn.Identity()
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
         # Apply shortcut connection
-        if feat_idx is None:
-            feat_idx = []
         h = self.conv_shortcut(x)
 
         # First normalization and activation
@@ -154,6 +150,7 @@ class QwenImageResidualBlock(nn.Module):
 
         # Add residual connection
         return x + h
+
 
 
 class QwenImageAttentionBlock(nn.Module):
@@ -201,6 +198,7 @@ class QwenImageAttentionBlock(nn.Module):
         return x + identity
 
 
+
 class QwenImageUpsample(nn.Upsample):
     r"""
     Perform upsampling while ensuring the output tensor has the same data type as the input.
@@ -214,6 +212,7 @@ class QwenImageUpsample(nn.Upsample):
 
     def forward(self, x):
         return super().forward(x.float()).type_as(x)
+
 
 
 class QwenImageResample(nn.Module):
@@ -255,9 +254,7 @@ class QwenImageResample(nn.Module):
         else:
             self.resample = nn.Identity()
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
-        if feat_idx is None:
-            feat_idx = []
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
         b, c, t, h, w = x.size()
         if self.mode == "upsample3d":
             if feat_cache is not None:
@@ -303,6 +300,7 @@ class QwenImageResample(nn.Module):
         return x
 
 
+
 class QwenImageMidBlock(nn.Module):
     """
     Middle block for WanVAE encoder and decoder.
@@ -328,10 +326,8 @@ class QwenImageMidBlock(nn.Module):
 
         self.gradient_checkpointing = False
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
         # First residual block
-        if feat_idx is None:
-            feat_idx = []
         x = self.resnets[0](x, feat_cache, feat_idx)
 
         # Process through attention and residual blocks
@@ -342,6 +338,7 @@ class QwenImageMidBlock(nn.Module):
             x = resnet(x, feat_cache, feat_idx)
 
         return x
+
 
 
 class QwenImageEncoder3d(nn.Module):
@@ -363,20 +360,14 @@ class QwenImageEncoder3d(nn.Module):
         self,
         dim=128,
         z_dim=4,
-        dim_mult=None,
+        dim_mult=[1, 2, 4, 4],
         num_res_blocks=2,
-        attn_scales=None,
-        temperal_downsample=None,
+        attn_scales=[],
+        temperal_downsample=[True, True, False],
         dropout=0.0,
         non_linearity: str = "silu",
         image_channels=3
     ):
-        if dim_mult is None:
-            dim_mult = []
-        if attn_scales is None:
-            attn_scales = []
-        if temperal_downsample is None:
-            temperal_downsample = []
         super().__init__()
         self.dim = dim
         self.z_dim = z_dim
@@ -418,9 +409,7 @@ class QwenImageEncoder3d(nn.Module):
 
         self.gradient_checkpointing = False
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
-        if feat_idx is None:
-            feat_idx = []
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
         if feat_cache is not None:
             idx = feat_idx[0]
             cache_x = x[:, :, -CACHE_T:, :, :].clone()
@@ -433,17 +422,17 @@ class QwenImageEncoder3d(nn.Module):
         else:
             x = self.conv_in(x)
 
-        # downsamples
+        ## downsamples
         for layer in self.down_blocks:
             if feat_cache is not None:
                 x = layer(x, feat_cache, feat_idx)
             else:
                 x = layer(x)
 
-        # middle
+        ## middle
         x = self.mid_block(x, feat_cache, feat_idx)
 
-        # head
+        ## head
         x = self.norm_out(x)
         x = self.nonlinearity(x)
         if feat_cache is not None:
@@ -458,6 +447,7 @@ class QwenImageEncoder3d(nn.Module):
         else:
             x = self.conv_out(x)
         return x
+
 
 
 class QwenImageUpBlock(nn.Module):
@@ -503,7 +493,7 @@ class QwenImageUpBlock(nn.Module):
 
         self.gradient_checkpointing = False
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
         """
         Forward pass through the upsampling block.
 
@@ -515,8 +505,6 @@ class QwenImageUpBlock(nn.Module):
         Returns:
             torch.Tensor: Output tensor
         """
-        if feat_idx is None:
-            feat_idx = []
         for resnet in self.resnets:
             if feat_cache is not None:
                 x = resnet(x, feat_cache, feat_idx)
@@ -529,6 +517,7 @@ class QwenImageUpBlock(nn.Module):
             else:
                 x = self.upsamplers[0](x)
         return x
+
 
 
 class QwenImageDecoder3d(nn.Module):
@@ -550,20 +539,14 @@ class QwenImageDecoder3d(nn.Module):
         self,
         dim=128,
         z_dim=4,
-        dim_mult=None,
+        dim_mult=[1, 2, 4, 4],
         num_res_blocks=2,
-        attn_scales=None,
-        temperal_upsample=None,
+        attn_scales=[],
+        temperal_upsample=[False, True, True],
         dropout=0.0,
         non_linearity: str = "silu",
         image_channels=3,
     ):
-        if dim_mult is None:
-            dim_mult = []
-        if attn_scales is None:
-            attn_scales = []
-        if temperal_upsample is None:
-            temperal_upsample = []
         super().__init__()
         self.dim = dim
         self.z_dim = z_dim
@@ -617,10 +600,8 @@ class QwenImageDecoder3d(nn.Module):
 
         self.gradient_checkpointing = False
 
-    def forward(self, x, feat_cache=None, feat_idx=None):
-        # conv1
-        if feat_idx is None:
-            feat_idx = []
+    def forward(self, x, feat_cache=None, feat_idx=[0]):
+        ## conv1
         if feat_cache is not None:
             idx = feat_idx[0]
             cache_x = x[:, :, -CACHE_T:, :, :].clone()
@@ -633,14 +614,14 @@ class QwenImageDecoder3d(nn.Module):
         else:
             x = self.conv_in(x)
 
-        # middle
+        ## middle
         x = self.mid_block(x, feat_cache, feat_idx)
 
-        # upsamples
+        ## upsamples
         for up_block in self.up_blocks:
             x = up_block(x, feat_cache, feat_idx)
 
-        # head
+        ## head
         x = self.norm_out(x)
         x = self.nonlinearity(x)
         if feat_cache is not None:
@@ -657,24 +638,19 @@ class QwenImageDecoder3d(nn.Module):
         return x
 
 
+
 class QwenImageVAE(torch.nn.Module):
     def __init__(
         self,
         base_dim: int = 96,
         z_dim: int = 16,
-        dim_mult: Tuple[int] = None,
+        dim_mult: Tuple[int] = [1, 2, 4, 4],
         num_res_blocks: int = 2,
-        attn_scales: List[float] = None,
-        temperal_downsample: List[bool] = None,
+        attn_scales: List[float] = [],
+        temperal_downsample: List[bool] = [False, True, True],
         dropout: float = 0.0,
         image_channels: int = 3,
     ) -> None:
-        if dim_mult is None:
-            dim_mult = []
-        if attn_scales is None:
-            attn_scales = []
-        if temperal_downsample is None:
-            temperal_downsample = []
         super().__init__()
 
         self.z_dim = z_dim
@@ -682,27 +658,13 @@ class QwenImageVAE(torch.nn.Module):
         self.temperal_upsample = temperal_downsample[::-1]
 
         self.encoder = QwenImageEncoder3d(
-            base_dim,
-            z_dim * 2,
-            dim_mult,
-            num_res_blocks,
-            attn_scales,
-            self.temperal_downsample,
-            dropout,
-            image_channels=image_channels,
+            base_dim, z_dim * 2, dim_mult, num_res_blocks, attn_scales, self.temperal_downsample, dropout, image_channels=image_channels,
         )
         self.quant_conv = QwenImageCausalConv3d(z_dim * 2, z_dim * 2, 1)
         self.post_quant_conv = QwenImageCausalConv3d(z_dim, z_dim, 1)
 
         self.decoder = QwenImageDecoder3d(
-            base_dim,
-            z_dim,
-            dim_mult,
-            num_res_blocks,
-            attn_scales,
-            self.temperal_upsample,
-            dropout,
-            image_channels=image_channels,
+            base_dim, z_dim, dim_mult, num_res_blocks, attn_scales, self.temperal_upsample, dropout, image_channels=image_channels,
         )
 
         mean = [
@@ -753,7 +715,7 @@ class QwenImageVAE(torch.nn.Module):
         x = (x - mean) * std
         x = x.squeeze(2)
         return x
-
+    
     def decode(self, x, **kwargs):
         x = x.unsqueeze(2)
         mean, std = self.mean.to(dtype=x.dtype, device=x.device), self.std.to(dtype=x.dtype, device=x.device)

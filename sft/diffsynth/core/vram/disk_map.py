@@ -1,28 +1,26 @@
-import os
-
-import torch
 from safetensors import safe_open
+import torch, os
 
 
 class SafetensorsCompatibleTensor:
     def __init__(self, tensor):
         self.tensor = tensor
-
+    
     def get_shape(self):
         return list(self.tensor.shape)
 
 
 class SafetensorsCompatibleBinaryLoader:
     def __init__(self, path, device):
-        print("Detected non-safetensors files, which may cause slower loading. It's recommended to convert it to a safetensors file.")  # pylint: disable=line-too-long
+        print("Detected non-safetensors files, which may cause slower loading. It's recommended to convert it to a safetensors file.")
         self.state_dict = torch.load(path, weights_only=True, map_location=device)
-
+        
     def keys(self):
         return self.state_dict.keys()
-
+    
     def get_tensor(self, name):
         return self.state_dict[name]
-
+    
     def get_slice(self, name):
         return SafetensorsCompatibleTensor(self.state_dict[name])
 
@@ -44,7 +42,7 @@ class DiskMap:
             for name in file.keys():
                 self.name_map[name] = file_id
         self.rename_dict = self.fetch_rename_dict(state_dict_converter)
-
+        
     def flush_files(self):
         if len(self.files) == 0:
             for path in self.path:
@@ -59,8 +57,7 @@ class DiskMap:
         self.num_params = 0
 
     def __getitem__(self, name):
-        if self.rename_dict is not None:
-            name = self.rename_dict[name]
+        if self.rename_dict is not None: name = self.rename_dict[name]
         file_id = self.name_map[name]
         param = self.files[file_id].get_tensor(name)
         if self.torch_dtype is not None and isinstance(param, torch.Tensor):
@@ -82,13 +79,13 @@ class DiskMap:
                 state_dict[name] = name
         state_dict = state_dict_converter(state_dict)
         return state_dict
-
+    
     def __iter__(self):
         if self.rename_dict is not None:
             return self.rename_dict.__iter__()
         else:
             return self.name_map.__iter__()
-
+    
     def __contains__(self, x):
         if self.rename_dict is not None:
             return x in self.rename_dict

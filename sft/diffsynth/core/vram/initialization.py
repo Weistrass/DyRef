@@ -1,6 +1,5 @@
-from contextlib import contextmanager
-
 import torch
+from contextlib import contextmanager
 
 
 @contextmanager

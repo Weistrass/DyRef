@@ -1,7 +1,6 @@
 import importlib
-from typing import Any
-
 import torch
+from typing import Any
 
 
 def is_torch_npu_available():

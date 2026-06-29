@@ -1,7 +1,4 @@
-# pylint: disable=invalid-name
-
 import math
-
 import torch
 import torch.nn as nn
 
@@ -19,7 +16,7 @@ def FeedForward(dim, mult=4):
 
 def reshape_tensor(x, heads):
     bs, length, width = x.shape
-    # (bs, length, width) --> (bs, length, n_heads, dim_per_head)
+    #(bs, length, width) --> (bs, length, n_heads, dim_per_head)
     x = x.view(bs, length, heads, -1)
     # (bs, length, n_heads, dim_per_head) --> (bs, n_heads, length, dim_per_head)
     x = x.transpose(1, 2)

@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def QwenImageTextEncoderStateDictConverter(state_dict):
     state_dict_ = {}
     for k in state_dict:

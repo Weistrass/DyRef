@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def WanImageEncoderStateDictConverter(state_dict):
     state_dict_ = {}
     for name in state_dict:

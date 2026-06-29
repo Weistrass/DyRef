@@ -1,9 +1,6 @@
-# pylint: disable=invalid-name
-
 import torch
+from .general_modules import TimestepEmbeddings, AdaLayerNorm, RMSNorm
 from einops import rearrange
-
-from .general_modules import AdaLayerNorm, RMSNorm, TimestepEmbeddings
 
 
 def interact_with_ipadapter(hidden_states, q, ip_k, ip_v, scale=1.0):
@@ -21,6 +18,7 @@ class RoPEEmbedding(torch.nn.Module):
         self.theta = theta
         self.axes_dim = axes_dim
 
+
     def rope(self, pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
         assert dim % 2 == 0, "The dimension must be even."
 
@@ -36,10 +34,12 @@ class RoPEEmbedding(torch.nn.Module):
         out = stacked_out.view(batch_size, -1, dim // 2, 2, 2)
         return out.float()
 
+
     def forward(self, ids):
         n_axes = ids.shape[-1]
         emb = torch.cat([self.rope(ids[..., i], self.axes_dim[i], self.theta) for i in range(n_axes)], dim=-3)
         return emb.unsqueeze(1)
+
 
 
 class FluxJointAttention(torch.nn.Module):
@@ -60,6 +60,7 @@ class FluxJointAttention(torch.nn.Module):
         self.a_to_out = torch.nn.Linear(dim_a, dim_a)
         if not only_out_a:
             self.b_to_out = torch.nn.Linear(dim_b, dim_b)
+
 
     def apply_rope(self, xq, xk, freqs_cis):
         xq_ = xq.float().reshape(*xq.shape[:-1], -1, 1, 2)
@@ -92,9 +93,7 @@ class FluxJointAttention(torch.nn.Module):
         hidden_states = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
         hidden_states = hidden_states.transpose(1, 2).reshape(batch_size, -1, self.num_heads * self.head_dim)
         hidden_states = hidden_states.to(q.dtype)
-        _split = hidden_states_b.shape[1]
-        hidden_states_b = hidden_states[:, :_split]
-        hidden_states_a = hidden_states[:, _split:]
+        hidden_states_b, hidden_states_a = hidden_states[:, :hidden_states_b.shape[1]], hidden_states[:, hidden_states_b.shape[1]:]
         if ipadapter_kwargs_list is not None:
             hidden_states_a = interact_with_ipadapter(hidden_states_a, q_a, **ipadapter_kwargs_list)
         hidden_states_a = self.a_to_out(hidden_states_a)
@@ -103,6 +102,7 @@ class FluxJointAttention(torch.nn.Module):
         else:
             hidden_states_b = self.b_to_out(hidden_states_b)
             return hidden_states_a, hidden_states_b
+
 
 
 class FluxJointTransformerBlock(torch.nn.Module):
@@ -115,32 +115,25 @@ class FluxJointTransformerBlock(torch.nn.Module):
 
         self.norm2_a = torch.nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
         self.ff_a = torch.nn.Sequential(
-            torch.nn.Linear(dim, dim * 4),
+            torch.nn.Linear(dim, dim*4),
             torch.nn.GELU(approximate="tanh"),
-            torch.nn.Linear(dim * 4, dim)
+            torch.nn.Linear(dim*4, dim)
         )
 
         self.norm2_b = torch.nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
         self.ff_b = torch.nn.Sequential(
-            torch.nn.Linear(dim, dim * 4),
+            torch.nn.Linear(dim, dim*4),
             torch.nn.GELU(approximate="tanh"),
-            torch.nn.Linear(dim * 4, dim)
+            torch.nn.Linear(dim*4, dim)
         )
 
-    def forward(
-            self,
-            hidden_states_a,
-            hidden_states_b,
-            temb,
-            image_rotary_emb,
-            attn_mask=None,
-            ipadapter_kwargs_list=None):
+
+    def forward(self, hidden_states_a, hidden_states_b, temb, image_rotary_emb, attn_mask=None, ipadapter_kwargs_list=None):
         norm_hidden_states_a, gate_msa_a, shift_mlp_a, scale_mlp_a, gate_mlp_a = self.norm1_a(hidden_states_a, emb=temb)
         norm_hidden_states_b, gate_msa_b, shift_mlp_b, scale_mlp_b, gate_mlp_b = self.norm1_b(hidden_states_b, emb=temb)
 
         # Attention
-        attn_output_a, attn_output_b = self.attn(
-            norm_hidden_states_a, norm_hidden_states_b, image_rotary_emb, attn_mask, ipadapter_kwargs_list)
+        attn_output_a, attn_output_b = self.attn(norm_hidden_states_a, norm_hidden_states_b, image_rotary_emb, attn_mask, ipadapter_kwargs_list)
 
         # Part A
         hidden_states_a = hidden_states_a + gate_msa_a * attn_output_a
@@ -155,6 +148,7 @@ class FluxJointTransformerBlock(torch.nn.Module):
         return hidden_states_a, hidden_states_b
 
 
+
 class FluxSingleAttention(torch.nn.Module):
     def __init__(self, dim_a, dim_b, num_heads, head_dim):
         super().__init__()
@@ -166,12 +160,14 @@ class FluxSingleAttention(torch.nn.Module):
         self.norm_q_a = RMSNorm(head_dim, eps=1e-6)
         self.norm_k_a = RMSNorm(head_dim, eps=1e-6)
 
+
     def apply_rope(self, xq, xk, freqs_cis):
         xq_ = xq.float().reshape(*xq.shape[:-1], -1, 1, 2)
         xk_ = xk.float().reshape(*xk.shape[:-1], -1, 1, 2)
         xq_out = freqs_cis[..., 0] * xq_[..., 0] + freqs_cis[..., 1] * xq_[..., 1]
         xk_out = freqs_cis[..., 0] * xk_[..., 0] + freqs_cis[..., 1] * xk_[..., 1]
         return xq_out.reshape(*xq.shape).type_as(xq), xk_out.reshape(*xk.shape).type_as(xk)
+
 
     def forward(self, hidden_states, image_rotary_emb):
         batch_size = hidden_states.shape[0]
@@ -189,6 +185,7 @@ class FluxSingleAttention(torch.nn.Module):
         return hidden_states
 
 
+
 class AdaLayerNormSingle(torch.nn.Module):
     def __init__(self, dim):
         super().__init__()
@@ -196,11 +193,13 @@ class AdaLayerNormSingle(torch.nn.Module):
         self.linear = torch.nn.Linear(dim, 3 * dim, bias=True)
         self.norm = torch.nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
 
+
     def forward(self, x, emb):
         emb = self.linear(self.silu(emb))
         shift_msa, scale_msa, gate_msa = emb.chunk(3, dim=1)
         x = self.norm(x) * (1 + scale_msa[:, None]) + shift_msa[:, None]
         return x, gate_msa
+
 
 
 class FluxSingleTransformerBlock(torch.nn.Module):
@@ -217,12 +216,14 @@ class FluxSingleTransformerBlock(torch.nn.Module):
 
         self.proj_out = torch.nn.Linear(dim * 5, dim)
 
+
     def apply_rope(self, xq, xk, freqs_cis):
         xq_ = xq.float().reshape(*xq.shape[:-1], -1, 1, 2)
         xk_ = xk.float().reshape(*xk.shape[:-1], -1, 1, 2)
         xq_out = freqs_cis[..., 0] * xq_[..., 0] + freqs_cis[..., 1] * xq_[..., 1]
         xk_out = freqs_cis[..., 0] * xk_[..., 0] + freqs_cis[..., 1] * xk_[..., 1]
         return xq_out.reshape(*xq.shape).type_as(xq), xk_out.reshape(*xk.shape).type_as(xk)
+
 
     def process_attention(self, hidden_states, image_rotary_emb, attn_mask=None, ipadapter_kwargs_list=None):
         batch_size = hidden_states.shape[0]
@@ -240,14 +241,8 @@ class FluxSingleTransformerBlock(torch.nn.Module):
             hidden_states = interact_with_ipadapter(hidden_states, q, **ipadapter_kwargs_list)
         return hidden_states
 
-    def forward(
-            self,
-            hidden_states_a,
-            hidden_states_b,
-            temb,
-            image_rotary_emb,
-            attn_mask=None,
-            ipadapter_kwargs_list=None):
+
+    def forward(self, hidden_states_a, hidden_states_b, temb, image_rotary_emb, attn_mask=None, ipadapter_kwargs_list=None):
         residual = hidden_states_a
         norm_hidden_states, gate = self.norm(hidden_states_a, emb=temb)
         hidden_states_a = self.to_qkv_mlp(norm_hidden_states)
@@ -261,6 +256,7 @@ class FluxSingleTransformerBlock(torch.nn.Module):
         hidden_states_a = residual + hidden_states_a
 
         return hidden_states_a, hidden_states_b
+
 
 
 class AdaLayerNormContinuous(torch.nn.Module):
@@ -277,19 +273,14 @@ class AdaLayerNormContinuous(torch.nn.Module):
         return x
 
 
+
 class FluxDiT(torch.nn.Module):
-
-    _repeated_blocks = ["FluxJointTransformerBlock", "FluxSingleTransformerBlock"]
-
     def __init__(self, disable_guidance_embedder=False, input_dim=64, num_blocks=19):
         super().__init__()
         self.pos_embedder = RoPEEmbedding(3072, 10000, [16, 56, 56])
         self.time_embedder = TimestepEmbeddings(256, 3072)
         self.guidance_embedder = None if disable_guidance_embedder else TimestepEmbeddings(256, 3072)
-        self.pooled_text_embedder = torch.nn.Sequential(
-            torch.nn.Linear(
-                768, 3072), torch.nn.SiLU(), torch.nn.Linear(
-                3072, 3072))
+        self.pooled_text_embedder = torch.nn.Sequential(torch.nn.Linear(768, 3072), torch.nn.SiLU(), torch.nn.Linear(3072, 3072))
         self.context_embedder = torch.nn.Linear(4096, 3072)
         self.x_embedder = torch.nn.Linear(input_dim, 3072)
 
@@ -298,22 +289,19 @@ class FluxDiT(torch.nn.Module):
 
         self.final_norm_out = AdaLayerNormContinuous(3072)
         self.final_proj_out = torch.nn.Linear(3072, 64)
-
+        
         self.input_dim = input_dim
+
 
     def patchify(self, hidden_states):
         hidden_states = rearrange(hidden_states, "B C (H P) (W Q) -> B (H W) (C P Q)", P=2, Q=2)
         return hidden_states
 
+
     def unpatchify(self, hidden_states, height, width):
-        hidden_states = rearrange(
-            hidden_states,
-            "B (H W) (C P Q) -> B C (H P) (W Q)",
-            P=2,
-            Q=2,
-            H=height // 2,
-            W=width // 2)
+        hidden_states = rearrange(hidden_states, "B (H W) (C P Q) -> B C (H P) (W Q)", P=2, Q=2, H=height//2, W=width//2)
         return hidden_states
+
 
     def prepare_image_ids(self, latents):
         batch_size, _, height, width = latents.shape
@@ -331,14 +319,13 @@ class FluxDiT(torch.nn.Module):
 
         return latent_image_ids
 
+
     def construct_mask(self, entity_masks, prompt_seq_len, image_seq_len):
         N = len(entity_masks)
         batch_size = entity_masks[0].shape[0]
         total_seq_len = N * prompt_seq_len + image_seq_len
         patched_masks = [self.patchify(entity_masks[i]) for i in range(N)]
-        attention_mask = torch.ones(
-            (batch_size, total_seq_len, total_seq_len), dtype=torch.bool).to(
-            device=entity_masks[0].device)
+        attention_mask = torch.ones((batch_size, total_seq_len, total_seq_len), dtype=torch.bool).to(device=entity_masks[0].device)
 
         image_start = N * prompt_seq_len
         image_end = N * prompt_seq_len + image_seq_len
@@ -367,15 +354,8 @@ class FluxDiT(torch.nn.Module):
         attention_mask[attention_mask == 1] = 0
         return attention_mask
 
-    def process_entity_masks(
-            self,
-            hidden_states,
-            prompt_emb,
-            entity_prompt_emb,
-            entity_masks,
-            text_ids,
-            image_ids,
-            repeat_dim):
+
+    def process_entity_masks(self, hidden_states, prompt_emb, entity_prompt_emb, entity_masks, text_ids, image_ids, repeat_dim):
         max_masks = 0
         attention_mask = None
         prompt_embs = [prompt_emb]
@@ -386,14 +366,14 @@ class FluxDiT(torch.nn.Module):
             entity_masks = [entity_masks[:, i, None].squeeze(1) for i in range(max_masks)]
             # global mask
             global_mask = torch.ones_like(entity_masks[0]).to(device=hidden_states.device, dtype=hidden_states.dtype)
-            entity_masks = entity_masks + [global_mask]  # append global to last
+            entity_masks = entity_masks + [global_mask] # append global to last
             # attention mask
             attention_mask = self.construct_mask(entity_masks, prompt_emb.shape[1], hidden_states.shape[1])
             attention_mask = attention_mask.to(device=hidden_states.device, dtype=hidden_states.dtype)
             attention_mask = attention_mask.unsqueeze(1)
             # embds: n_masks * b * seq * d
             local_embs = [entity_prompt_emb[:, i, None].squeeze(1) for i in range(max_masks)]
-            prompt_embs = local_embs + prompt_embs  # append global to last
+            prompt_embs = local_embs + prompt_embs # append global to last
         prompt_embs = [self.context_embedder(prompt_emb) for prompt_emb in prompt_embs]
         prompt_emb = torch.cat(prompt_embs, dim=1)
 
@@ -401,6 +381,7 @@ class FluxDiT(torch.nn.Module):
         text_ids = torch.cat([text_ids] * (max_masks + 1), dim=1)
         image_rotary_emb = self.pos_embedder(torch.cat((text_ids, image_ids), dim=1))
         return prompt_emb, image_rotary_emb, attention_mask
+
 
     def forward(
         self,

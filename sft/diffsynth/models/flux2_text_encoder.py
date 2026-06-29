@@ -1,4 +1,4 @@
-from transformers import Mistral3Config, Mistral3ForConditionalGeneration
+from transformers import Mistral3ForConditionalGeneration, Mistral3Config
 
 
 class Flux2TextEncoder(Mistral3ForConditionalGeneration):
@@ -52,37 +52,7 @@ class Flux2TextEncoder(Mistral3ForConditionalGeneration):
             "vision_feature_layer": -1
         })
         super().__init__(config)
+    
+    def forward(self, input_ids = None, pixel_values = None, attention_mask = None, position_ids = None, past_key_values = None, inputs_embeds = None, labels = None, use_cache = None, output_attentions = None, output_hidden_states = None, return_dict = None, cache_position = None, logits_to_keep = 0, image_sizes = None, **kwargs):
+        return super().forward(input_ids, pixel_values, attention_mask, position_ids, past_key_values, inputs_embeds, labels, use_cache, output_attentions, output_hidden_states, return_dict, cache_position, logits_to_keep, image_sizes, **kwargs)
 
-    def forward(
-            self,
-            input_ids = None,
-            pixel_values = None,
-            attention_mask = None,
-            position_ids = None,
-            past_key_values = None,
-            inputs_embeds = None,
-            labels = None,
-            use_cache = None,
-            output_attentions = None,
-            output_hidden_states = None,
-            return_dict = None,
-            cache_position = None,
-            logits_to_keep = 0,
-            image_sizes = None,
-            **kwargs):
-        return super().forward(
-            input_ids,
-            pixel_values,
-            attention_mask,
-            position_ids,
-            past_key_values,
-            inputs_embeds,
-            labels,
-            use_cache,
-            output_attentions,
-            output_hidden_states,
-            return_dict,
-            cache_position,
-            logits_to_keep,
-            image_sizes,
-            **kwargs)

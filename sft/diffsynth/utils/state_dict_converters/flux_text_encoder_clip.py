@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def FluxTextEncoderClipStateDictConverter(state_dict):
     rename_dict = {
         "text_model.embeddings.token_embedding.weight": "token_embedding.weight",

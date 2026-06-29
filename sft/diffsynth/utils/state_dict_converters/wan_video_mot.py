@@ -1,5 +1,3 @@
-# pylint: disable=invalid-name
-
 def WanVideoMotStateDictConverter(state_dict):
     rename_dict = {
         "blocks.0.attn1.norm_k.weight": "blocks.0.self_attn.norm_k.weight",
@@ -22,11 +20,11 @@ def WanVideoMotStateDictConverter(state_dict):
         "blocks.0.attn2.to_q.weight": "blocks.0.cross_attn.q.weight",
         "blocks.0.attn2.to_v.bias": "blocks.0.cross_attn.v.bias",
         "blocks.0.attn2.to_v.weight": "blocks.0.cross_attn.v.weight",
-        "blocks.0.attn2.add_k_proj.bias": "blocks.0.cross_attn.k_img.bias",
-        "blocks.0.attn2.add_k_proj.weight": "blocks.0.cross_attn.k_img.weight",
-        "blocks.0.attn2.add_v_proj.bias": "blocks.0.cross_attn.v_img.bias",
-        "blocks.0.attn2.add_v_proj.weight": "blocks.0.cross_attn.v_img.weight",
-        "blocks.0.attn2.norm_added_k.weight": "blocks.0.cross_attn.norm_k_img.weight",
+        "blocks.0.attn2.add_k_proj.bias":"blocks.0.cross_attn.k_img.bias",
+        "blocks.0.attn2.add_k_proj.weight":"blocks.0.cross_attn.k_img.weight",
+        "blocks.0.attn2.add_v_proj.bias":"blocks.0.cross_attn.v_img.bias",
+        "blocks.0.attn2.add_v_proj.weight":"blocks.0.cross_attn.v_img.weight",
+        "blocks.0.attn2.norm_added_k.weight":"blocks.0.cross_attn.norm_k_img.weight",
         "blocks.0.ffn.net.0.proj.bias": "blocks.0.ffn.0.bias",
         "blocks.0.ffn.net.0.proj.weight": "blocks.0.ffn.0.weight",
         "blocks.0.ffn.net.2.bias": "blocks.0.ffn.2.bias",
@@ -44,14 +42,14 @@ def WanVideoMotStateDictConverter(state_dict):
         "condition_embedder.time_embedder.linear_2.weight": "time_embedding.2.weight",
         "condition_embedder.time_proj.bias": "time_projection.1.bias",
         "condition_embedder.time_proj.weight": "time_projection.1.weight",
-        "condition_embedder.image_embedder.ff.net.0.proj.bias": "img_emb.proj.1.bias",
-        "condition_embedder.image_embedder.ff.net.0.proj.weight": "img_emb.proj.1.weight",
-        "condition_embedder.image_embedder.ff.net.2.bias": "img_emb.proj.3.bias",
-        "condition_embedder.image_embedder.ff.net.2.weight": "img_emb.proj.3.weight",
-        "condition_embedder.image_embedder.norm1.bias": "img_emb.proj.0.bias",
-        "condition_embedder.image_embedder.norm1.weight": "img_emb.proj.0.weight",
-        "condition_embedder.image_embedder.norm2.bias": "img_emb.proj.4.bias",
-        "condition_embedder.image_embedder.norm2.weight": "img_emb.proj.4.weight",
+        "condition_embedder.image_embedder.ff.net.0.proj.bias":"img_emb.proj.1.bias",
+        "condition_embedder.image_embedder.ff.net.0.proj.weight":"img_emb.proj.1.weight",
+        "condition_embedder.image_embedder.ff.net.2.bias":"img_emb.proj.3.bias",
+        "condition_embedder.image_embedder.ff.net.2.weight":"img_emb.proj.3.weight",
+        "condition_embedder.image_embedder.norm1.bias":"img_emb.proj.0.bias",
+        "condition_embedder.image_embedder.norm1.weight":"img_emb.proj.0.weight",
+        "condition_embedder.image_embedder.norm2.bias":"img_emb.proj.4.bias",
+        "condition_embedder.image_embedder.norm2.weight":"img_emb.proj.4.weight",
         "patch_embedding.bias": "patch_embedding.bias",
         "patch_embedding.weight": "patch_embedding.weight",
         "scale_shift_table": "head.modulation",
@@ -59,7 +57,7 @@ def WanVideoMotStateDictConverter(state_dict):
         "proj_out.weight": "head.head.weight",
     }
     mot_layers = (0, 4, 8, 12, 16, 20, 24, 28, 32, 36)
-    mot_layers_mapping = {i: n for n, i in enumerate(mot_layers)}
+    mot_layers_mapping = {i:n for n, i in enumerate(mot_layers)}
     state_dict_ = {}
     for name in state_dict:
         if "_mot_ref" not in name:

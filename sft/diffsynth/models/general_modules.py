@@ -1,6 +1,4 @@
-import math
-
-import torch
+import torch, math
 
 
 def get_timestep_embedding(
@@ -17,8 +15,7 @@ def get_timestep_embedding(
 
     half_dim = embedding_dim // 2
     exponent = -math.log(max_period) * torch.arange(
-        start=0, end=half_dim, dtype=torch.float32,
-        device=timesteps.device if computation_device is None else computation_device,
+        start=0, end=half_dim, dtype=torch.float32, device=timesteps.device if computation_device is None else computation_device
     )
     exponent = exponent / (half_dim - downscale_freq_shift)
 
@@ -44,14 +41,7 @@ def get_timestep_embedding(
 
 
 class TemporalTimesteps(torch.nn.Module):
-    def __init__(
-            self,
-            num_channels: int,
-            flip_sin_to_cos: bool,
-            downscale_freq_shift: float,
-            computation_device = None,
-            scale=1,
-            align_dtype_to_timestep=False):
+    def __init__(self, num_channels: int, flip_sin_to_cos: bool, downscale_freq_shift: float, computation_device = None, scale=1, align_dtype_to_timestep=False):
         super().__init__()
         self.num_channels = num_channels
         self.flip_sin_to_cos = flip_sin_to_cos
@@ -88,23 +78,9 @@ class DiffusersCompatibleTimestepProj(torch.nn.Module):
 
 
 class TimestepEmbeddings(torch.nn.Module):
-    def __init__(
-            self,
-            dim_in,
-            dim_out,
-            computation_device=None,
-            diffusers_compatible_format=False,
-            scale=1,
-            align_dtype_to_timestep=False,
-            use_additional_t_cond=False):
+    def __init__(self, dim_in, dim_out, computation_device=None, diffusers_compatible_format=False, scale=1, align_dtype_to_timestep=False, use_additional_t_cond=False):
         super().__init__()
-        self.time_proj = TemporalTimesteps(
-            num_channels=dim_in,
-            flip_sin_to_cos=True,
-            downscale_freq_shift=0,
-            computation_device=computation_device,
-            scale=scale,
-            align_dtype_to_timestep=align_dtype_to_timestep)
+        self.time_proj = TemporalTimesteps(num_channels=dim_in, flip_sin_to_cos=True, downscale_freq_shift=0, computation_device=computation_device, scale=scale, align_dtype_to_timestep=align_dtype_to_timestep)
         if diffusers_compatible_format:
             self.timestep_embedder = DiffusersCompatibleTimestepProj(dim_in, dim_out)
         else:
@@ -159,11 +135,7 @@ class AdaLayerNorm(torch.nn.Module):
             x = self.norm(x) * (1 + scale) + shift
             return x
         elif self.dual:
-            (
-                shift_msa, scale_msa, gate_msa,
-                shift_mlp, scale_mlp, gate_mlp,
-                shift_msa2, scale_msa2, gate_msa2,
-            ) = emb.unsqueeze(1).chunk(9, dim=2)
+            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp, shift_msa2, scale_msa2, gate_msa2 = emb.unsqueeze(1).chunk(9, dim=2)
             norm_x = self.norm(x)
             x = norm_x * (1 + scale_msa) + shift_msa
             norm_x2 = norm_x * (1 + scale_msa2) + shift_msa2

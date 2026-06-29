@@ -39,7 +39,7 @@ This project requires separate conda environments due to framework dependency co
 
 ```bash
 cd sft
-conda env create -f environment.yml -n dyref_sft
+conda create -n dyref_sft python=3.11 -y
 conda activate dyref_sft
 pip install -e .
 
@@ -64,7 +64,7 @@ python all_scripts/diffusers_peft_transfer.py --mode d2p \
 
 ```bash
 cd rl
-conda env create -f environment.yml -n dyref_rl
+conda create -n dyref_rl python=3.11 -y
 conda activate dyref_rl
 pip install -e .[deepspeed]
 

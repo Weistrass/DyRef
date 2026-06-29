@@ -1,8 +1,6 @@
-import torch
-from transformers import DINOv3ViTImageProcessorFast, DINOv3ViTModel
+from transformers import DINOv3ViTModel, DINOv3ViTImageProcessorFast
 from transformers.models.dinov3_vit.modeling_dinov3_vit import DINOv3ViTConfig
-
-from ..core.device.npu_compatible_device import get_device_type
+import torch
 
 
 class DINOv3ImageEncoder(DINOv3ViTModel):
@@ -71,13 +69,13 @@ class DINOv3ImageEncoder(DINOv3ViTModel):
                 "width": 224
             }
         )
-
-    def forward(self, image, torch_dtype=torch.bfloat16, device=get_device_type()):
+        
+    def forward(self, image, torch_dtype=torch.bfloat16, device="cuda"):
         inputs = self.processor(images=image, return_tensors="pt")
         pixel_values = inputs["pixel_values"].to(dtype=torch_dtype, device=device)
         bool_masked_pos = None
         head_mask = None
-
+        
         pixel_values = pixel_values.to(torch_dtype)
         hidden_states = self.embeddings(pixel_values, bool_masked_pos=bool_masked_pos)
         position_embeddings = self.rope_embeddings(pixel_values)

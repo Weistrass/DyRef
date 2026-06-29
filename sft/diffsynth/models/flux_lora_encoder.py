@@ -1,7 +1,3 @@
-# pylint: disable=invalid-name
-
-# pylint: disable=line-too-long
-
 import torch
 from einops import rearrange
 
@@ -38,13 +34,7 @@ class Attention(torch.nn.Module):
         hidden_states = hidden_states + scale * ip_hidden_states
         return hidden_states
 
-    def torch_forward(
-            self,
-            hidden_states,
-            encoder_hidden_states=None,
-            attn_mask=None,
-            ipadapter_kwargs=None,
-            qkv_preprocessor=None):
+    def torch_forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None, ipadapter_kwargs=None, qkv_preprocessor=None):
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
 
@@ -70,7 +60,7 @@ class Attention(torch.nn.Module):
         hidden_states = self.to_out(hidden_states)
 
         return hidden_states
-
+    
     def xformers_forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None):
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
@@ -95,31 +85,17 @@ class Attention(torch.nn.Module):
 
         return hidden_states
 
-    def forward(
-            self,
-            hidden_states,
-            encoder_hidden_states=None,
-            attn_mask=None,
-            ipadapter_kwargs=None,
-            qkv_preprocessor=None):
-        return self.torch_forward(
-            hidden_states,
-            encoder_hidden_states=encoder_hidden_states,
-            attn_mask=attn_mask,
-            ipadapter_kwargs=ipadapter_kwargs,
-            qkv_preprocessor=qkv_preprocessor)
+    def forward(self, hidden_states, encoder_hidden_states=None, attn_mask=None, ipadapter_kwargs=None, qkv_preprocessor=None):
+        return self.torch_forward(hidden_states, encoder_hidden_states=encoder_hidden_states, attn_mask=attn_mask, ipadapter_kwargs=ipadapter_kwargs, qkv_preprocessor=qkv_preprocessor)
+
+
+
 
 
 class CLIPEncoderLayer(torch.nn.Module):
     def __init__(self, embed_dim, intermediate_size, num_heads=12, head_dim=64, use_quick_gelu=True):
         super().__init__()
-        self.attn = Attention(
-            q_dim=embed_dim,
-            num_heads=num_heads,
-            head_dim=head_dim,
-            bias_q=True,
-            bias_kv=True,
-            bias_out=True)
+        self.attn = Attention(q_dim=embed_dim, num_heads=num_heads, head_dim=head_dim, bias_q=True, bias_kv=True, bias_out=True)
         self.layer_norm1 = torch.nn.LayerNorm(embed_dim)
         self.layer_norm2 = torch.nn.LayerNorm(embed_dim)
         self.fc1 = torch.nn.Linear(embed_dim, intermediate_size)
@@ -129,7 +105,7 @@ class CLIPEncoderLayer(torch.nn.Module):
 
     def quickGELU(self, x):
         return x * torch.sigmoid(1.702 * x)
-
+    
     def forward(self, hidden_states, attn_mask=None):
         residual = hidden_states
 
@@ -148,16 +124,10 @@ class CLIPEncoderLayer(torch.nn.Module):
         hidden_states = residual + hidden_states
 
         return hidden_states
-
+    
 
 class SDTextEncoder(torch.nn.Module):
-    def __init__(
-            self,
-            embed_dim=768,
-            vocab_size=49408,
-            max_position_embeddings=77,
-            num_encoder_layers=12,
-            encoder_intermediate_size=3072):
+    def __init__(self, embed_dim=768, vocab_size=49408, max_position_embeddings=77, num_encoder_layers=12, encoder_intermediate_size=3072):
         super().__init__()
 
         # token_embedding
@@ -167,8 +137,7 @@ class SDTextEncoder(torch.nn.Module):
         self.position_embeds = torch.nn.Parameter(torch.zeros(1, max_position_embeddings, embed_dim))
 
         # encoders
-        self.encoders = torch.nn.ModuleList(
-            [CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
+        self.encoders = torch.nn.ModuleList([CLIPEncoderLayer(embed_dim, encoder_intermediate_size) for _ in range(num_encoder_layers)])
 
         # attn_mask
         self.attn_mask = self.attention_mask(max_position_embeddings)
@@ -191,7 +160,7 @@ class SDTextEncoder(torch.nn.Module):
                 break
         embeds = self.final_layer_norm(embeds)
         return embeds
-
+    
     @staticmethod
     def state_dict_converter():
         return SDTextEncoderStateDictConverter()
@@ -232,7 +201,7 @@ class SDTextEncoderStateDictConverter:
                 name_ = ".".join(["encoders", layer_id, attn_rename_dict[layer_type], tail])
                 state_dict_[name_] = param
         return state_dict_
-
+    
     def from_civitai(self, state_dict):
         rename_dict = {
             "cond_stage_model.transformer.text_model.embeddings.token_embedding.weight": "token_embedding.weight",
@@ -279,7 +248,7 @@ class SDTextEncoderStateDictConverter:
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.k_proj.bias": "encoders.10.attn.to_k.bias",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.k_proj.weight": "encoders.10.attn.to_k.weight",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.bias": "encoders.10.attn.to_out.bias",
-            "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.weight": "encoders.10.attn.to_out.weight",
+            "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.out_proj.weight": "encoders.10.attn.to_out.weight",        
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.q_proj.bias": "encoders.10.attn.to_q.bias",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.q_proj.weight": "encoders.10.attn.to_q.weight",
             "cond_stage_model.transformer.text_model.encoder.layers.10.self_attn.v_proj.bias": "encoders.10.attn.to_v.bias",
@@ -430,7 +399,8 @@ class SDTextEncoderStateDictConverter:
             "cond_stage_model.transformer.text_model.encoder.layers.9.self_attn.v_proj.weight": "encoders.9.attn.to_v.weight",
             "cond_stage_model.transformer.text_model.final_layer_norm.bias": "final_layer_norm.bias",
             "cond_stage_model.transformer.text_model.final_layer_norm.weight": "final_layer_norm.weight",
-            "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight": "position_embeds" }
+            "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight": "position_embeds"
+        }
         state_dict_ = {}
         for name in state_dict:
             if name in rename_dict:
@@ -441,53 +411,47 @@ class SDTextEncoderStateDictConverter:
         return state_dict_
 
 
+
 class LoRALayerBlock(torch.nn.Module):
     def __init__(self, L, dim_in, dim_out):
         super().__init__()
         self.x = torch.nn.Parameter(torch.randn(1, L, dim_in))
         self.layer_norm = torch.nn.LayerNorm(dim_out)
 
-    def forward(self, lora_a, lora_b):
-        x = self.x @ lora_a.T @ lora_b.T
+    def forward(self, lora_A, lora_B):
+        x = self.x @ lora_A.T @ lora_B.T
         x = self.layer_norm(x)
         return x
-
+    
 
 class LoRAEmbedder(torch.nn.Module):
     def __init__(self, lora_patterns=None, L=1, out_dim=2048):
         super().__init__()
         if lora_patterns is None:
             lora_patterns = self.default_lora_patterns()
-
+            
         model_dict = {}
         for lora_pattern in lora_patterns:
             name, dim = lora_pattern["name"], lora_pattern["dim"]
             model_dict[name.replace(".", "___")] = LoRALayerBlock(L, dim[0], dim[1])
         self.model_dict = torch.nn.ModuleDict(model_dict)
-
+        
         proj_dict = {}
         for lora_pattern in lora_patterns:
             layer_type, dim = lora_pattern["type"], lora_pattern["dim"]
             if layer_type not in proj_dict:
                 proj_dict[layer_type.replace(".", "___")] = torch.nn.Linear(dim[1], out_dim)
         self.proj_dict = torch.nn.ModuleDict(proj_dict)
-
+        
         self.lora_patterns = lora_patterns
-
+        
+        
     def default_lora_patterns(self):
         lora_patterns = []
         lora_dict = {
-            "attn.a_to_qkv": (
-                3072, 9216), "attn.a_to_out": (
-                3072, 3072), "ff_a.0": (
-                3072, 12288), "ff_a.2": (
-                    12288, 3072), "norm1_a.linear": (
-                        3072, 18432), "attn.b_to_qkv": (
-                            3072, 9216), "attn.b_to_out": (
-                                3072, 3072), "ff_b.0": (
-                                    3072, 12288), "ff_b.2": (
-                                        12288, 3072), "norm1_b.linear": (
-                                            3072, 18432), }
+            "attn.a_to_qkv": (3072, 9216), "attn.a_to_out": (3072, 3072), "ff_a.0": (3072, 12288), "ff_a.2": (12288, 3072), "norm1_a.linear": (3072, 18432),
+            "attn.b_to_qkv": (3072, 9216), "attn.b_to_out": (3072, 3072), "ff_b.0": (3072, 12288), "ff_b.2": (12288, 3072), "norm1_b.linear": (3072, 18432),
+        }
         for i in range(19):
             for suffix in lora_dict:
                 lora_patterns.append({
@@ -504,41 +468,34 @@ class LoRAEmbedder(torch.nn.Module):
                     "type": suffix,
                 })
         return lora_patterns
-
+        
     def forward(self, lora):
         lora_emb = []
         for lora_pattern in self.lora_patterns:
             name, layer_type = lora_pattern["name"], lora_pattern["type"]
-            lora_a = lora[name + ".lora_A.weight"]
-            lora_b = lora[name + ".lora_B.weight"]
-            lora_out = self.model_dict[name.replace(".", "___")](lora_a, lora_b)
+            lora_A = lora[name + ".lora_A.weight"]
+            lora_B = lora[name + ".lora_B.weight"]
+            lora_out = self.model_dict[name.replace(".", "___")](lora_A, lora_B)
             lora_out = self.proj_dict[layer_type.replace(".", "___")](lora_out)
             lora_emb.append(lora_out)
         lora_emb = torch.concat(lora_emb, dim=1)
         return lora_emb
-
-
+    
+    
 class FluxLoRAEncoder(torch.nn.Module):
-    def __init__(
-            self,
-            embed_dim=4096,
-            encoder_intermediate_size=8192,
-            num_encoder_layers=1,
-            num_embeds_per_lora=16,
-            num_special_embeds=1):
+    def __init__(self, embed_dim=4096, encoder_intermediate_size=8192, num_encoder_layers=1, num_embeds_per_lora=16, num_special_embeds=1):
         super().__init__()
         self.num_embeds_per_lora = num_embeds_per_lora
         # embedder
         self.embedder = LoRAEmbedder(L=num_embeds_per_lora, out_dim=embed_dim)
-
+        
         # encoders
-        self.encoders = torch.nn.ModuleList(
-            [CLIPEncoderLayer(embed_dim, encoder_intermediate_size, num_heads=32, head_dim=128) for _ in range(num_encoder_layers)])
+        self.encoders = torch.nn.ModuleList([CLIPEncoderLayer(embed_dim, encoder_intermediate_size, num_heads=32, head_dim=128) for _ in range(num_encoder_layers)])
 
         # special embedding
         self.special_embeds = torch.nn.Parameter(torch.randn(1, num_special_embeds, embed_dim))
         self.num_special_embeds = num_special_embeds
-
+        
         # final layer
         self.final_layer_norm = torch.nn.LayerNorm(embed_dim)
         self.final_linear = torch.nn.Linear(embed_dim, embed_dim)
@@ -553,7 +510,7 @@ class FluxLoRAEncoder(torch.nn.Module):
         embeds = self.final_layer_norm(embeds)
         embeds = self.final_linear(embeds)
         return embeds
-
+    
     @staticmethod
     def state_dict_converter():
         return FluxLoRAEncoderStateDictConverter()

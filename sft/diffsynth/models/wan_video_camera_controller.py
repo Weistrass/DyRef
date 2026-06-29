@@ -1,13 +1,9 @@
-# pylint: disable=invalid-name
-
-import os
-
-import numpy as np
 import torch
 import torch.nn as nn
+import numpy as np
 from einops import rearrange
+import os
 from typing_extensions import Literal
-
 
 class SimpleAdapter(nn.Module):
     def __init__(self, in_dim, out_dim, kernel_size, stride, num_residual_blocks=1):
@@ -46,14 +42,14 @@ class SimpleAdapter(nn.Module):
         out = out.permute(0, 2, 1, 3, 4)
 
         return out
-
+    
     def process_camera_coordinates(
         self,
         direction: Literal["Left", "Right", "Up", "Down", "LeftUp", "LeftDown", "RightUp", "RightDown"],
         length: int,
         height: int,
         width: int,
-        speed: float = 1 / 54,
+        speed: float = 1/54,
         origin=(0, 0.532139961, 0.946026558, 0.5, 0.5, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0)
     ):
         if origin is None:
@@ -61,7 +57,8 @@ class SimpleAdapter(nn.Module):
         coordinates = generate_camera_coordinates(direction, length, speed, origin)
         plucker_embedding = process_pose_file(coordinates, width, height)
         return plucker_embedding
-
+        
+    
 
 class ResidualBlock(nn.Module):
     def __init__(self, dim):
@@ -76,12 +73,10 @@ class ResidualBlock(nn.Module):
         out = self.conv2(out)
         out += residual
         return out
-
-
+    
 class Camera(object):
     """Copied from https://github.com/hehao13/CameraCtrl/blob/main/inference.py
     """
-
     def __init__(self, entry):
         fx, fy, cx, cy = entry[1:5]
         self.fx = fx
@@ -93,7 +88,6 @@ class Camera(object):
         w2c_mat_4x4[:3, :] = w2c_mat
         self.w2c_mat = w2c_mat_4x4
         self.c2w_mat = np.linalg.inv(w2c_mat_4x4)
-
 
 def get_relative_pose(cam_params):
     """Copied from https://github.com/hehao13/CameraCtrl/blob/main/inference.py
@@ -111,7 +105,6 @@ def get_relative_pose(cam_params):
     ret_poses = [target_cam_c2w, ] + [abs2rel @ abs_c2w for abs_c2w in abs_c2ws[1:]]
     ret_poses = np.array(ret_poses, dtype=np.float32)
     return ret_poses
-
 
 def custom_meshgrid(*args):
     # torch>=2.0.0 only
@@ -154,14 +147,7 @@ def ray_condition(K, c2w, H, W, device):
     return plucker
 
 
-def process_pose_file(
-        cam_params,
-        width=672,
-        height=384,
-        original_pose_width=1280,
-        original_pose_height=720,
-        device='cpu',
-        return_poses=False):
+def process_pose_file(cam_params, width=672, height=384, original_pose_width=1280, original_pose_height=720, device='cpu', return_poses=False):
     if return_poses:
         return cam_params
     else:
@@ -188,18 +174,17 @@ def process_pose_file(
         K = torch.as_tensor(intrinsic)[None]  # [1, 1, 4]
         c2ws = get_relative_pose(cam_params)  # Assuming this function is defined elsewhere
         c2ws = torch.as_tensor(c2ws)[None]  # [1, n_frame, 4, 4]
-        plucker_embedding = ray_condition(
-            K, c2ws, height, width, device=device)[0].permute(
-            0, 3, 1, 2).contiguous()  # V, 6, H, W
+        plucker_embedding = ray_condition(K, c2ws, height, width, device=device)[0].permute(0, 3, 1, 2).contiguous()  # V, 6, H, W
         plucker_embedding = plucker_embedding[None]
         plucker_embedding = rearrange(plucker_embedding, "b f c h w -> b f h w c")[0]
         return plucker_embedding
 
 
+
 def generate_camera_coordinates(
     direction: Literal["Left", "Right", "Up", "Down", "LeftUp", "LeftDown", "RightUp", "RightDown", "In", "Out"],
     length: int,
-    speed: float = 1 / 54,
+    speed: float = 1/54,
     origin=(0, 0.532139961, 0.946026558, 0.5, 0.5, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0)
 ):
     coordinates = [list(origin)]

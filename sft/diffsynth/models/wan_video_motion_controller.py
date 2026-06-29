@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-
 from .wan_video_dit import sinusoidal_embedding_1d
+
 
 
 class WanMotionControllerModel(torch.nn.Module):

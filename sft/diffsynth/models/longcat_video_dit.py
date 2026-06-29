@@ -1,18 +1,15 @@
-# pylint: disable=invalid-name
-
-import math
 from typing import List, Optional, Tuple
 
-import numpy as np
+import math
 import torch
-import torch.amp as amp
 import torch.nn as nn
+import torch.amp as amp
+
+import numpy as np
 import torch.nn.functional as F
 from einops import rearrange, repeat
-
-from ..core.device.npu_compatible_device import get_device_type
-from ..core.gradient import gradient_checkpoint_forward
 from .wan_video_dit import flash_attention
+from ..core.gradient import gradient_checkpoint_forward
 
 
 class RMSNorm_FP32(torch.nn.Module):
@@ -72,8 +69,7 @@ class RotaryPositionalEmbedding(nn.Module):
         self.head_dim = head_dim
         assert self.head_dim % 8 == 0, 'Dim must be a multiply of 8 for 3D RoPE.'
         self.cp_split_hw = cp_split_hw
-        # We take the assumption that the longest side of grid will not larger
-        # than 512, i.e, 512 * 8 = 4098 input pixels
+        # We take the assumption that the longest side of grid will not larger than 512, i.e, 512 * 8 = 4098 input pixels
         self.base = 10000
         self.freqs_dict = {}
 
@@ -84,7 +80,7 @@ class RotaryPositionalEmbedding(nn.Module):
             })
 
     def precompute_freqs_cis_3d(self, grid_size):
-        num_frames, height, width = grid_size
+        num_frames, height, width = grid_size     
         dim_t = self.head_dim - 4 * (self.head_dim // 6)
         dim_h = 2 * (self.head_dim // 6)
         dim_w = 2 * (self.head_dim // 6)
@@ -188,7 +184,7 @@ class Attention(nn.Module):
         qkv = self.qkv(x)
 
         qkv_shape = (B, N, 3, self.num_heads, self.head_dim)
-        qkv = qkv.view(qkv_shape).permute((2, 0, 3, 1, 4))  # [3, B, H, N, D]
+        qkv = qkv.view(qkv_shape).permute((2, 0, 3, 1, 4)) # [3, B, H, N, D]
         q, k, v = qkv.unbind(0)
         q, k = self.q_norm(q), self.k_norm(k)
 
@@ -214,8 +210,8 @@ class Attention(nn.Module):
             x = self._process_attn(q, k, v, shape)
 
         x_output_shape = (B, N, C)
-        x = x.transpose(1, 2)  # [B, H, N, D] --> [B, N, H, D]
-        x = x.reshape(x_output_shape)  # [B, N, H, D] --> [B, N, C]
+        x = x.transpose(1, 2) # [B, H, N, D] --> [B, N, H, D]
+        x = x.reshape(x_output_shape) # [B, N, H, D] --> [B, N, C]
         x = self.proj(x)
 
         if return_kv:
@@ -228,9 +224,9 @@ class Attention(nn.Module):
         """
         B, N, C = x.shape
         qkv = self.qkv(x)
-
+        
         qkv_shape = (B, N, 3, self.num_heads, self.head_dim)
-        qkv = qkv.view(qkv_shape).permute((2, 0, 3, 1, 4))  # [3, B, H, N, D]
+        qkv = qkv.view(qkv_shape).permute((2, 0, 3, 1, 4)) # [3, B, H, N, D]
         q, k, v = qkv.unbind(0)
         q, k = self.q_norm(q), self.k_norm(k)
 
@@ -240,19 +236,19 @@ class Attention(nn.Module):
         if k_cache.shape[0] == 1:
             k_cache = k_cache.repeat(B, 1, 1, 1)
             v_cache = v_cache.repeat(B, 1, 1, 1)
-
+        
         if num_cond_latents is not None and num_cond_latents > 0:
             k_full = torch.cat([k_cache, k], dim=2).contiguous()
             v_full = torch.cat([v_cache, v], dim=2).contiguous()
             q_padding = torch.cat([torch.empty_like(k_cache), q], dim=2).contiguous()
             q_padding, k_full = self.rope_3d(q_padding, k_full, (T + num_cond_latents, H, W))
             q = q_padding[:, :, -N:].contiguous()
-
+            
         x = self._process_attn(q, k_full, v_full, shape)
-
+        
         x_output_shape = (B, N, C)
-        x = x.transpose(1, 2)  # [B, H, N, D] --> [B, N, H, D]
-        x = x.reshape(x_output_shape)  # [B, N, H, D] --> [B, N, C]
+        x = x.transpose(1, 2) # [B, H, N, D] --> [B, N, H, D]
+        x = x.reshape(x_output_shape) # [B, N, H, D] --> [B, N, C]
         x = self.proj(x)
 
         return x
@@ -260,13 +256,13 @@ class Attention(nn.Module):
 
 class MultiHeadCrossAttention(nn.Module):
     def __init__(
-        self,
-        dim,
-        num_heads,
-        enable_flashattn3=False,
-        enable_flashattn2=False,
-        enable_xformers=False,
-    ):
+            self,
+            dim,
+            num_heads,
+            enable_flashattn3=False,
+            enable_flashattn2=False,
+            enable_xformers=False,
+        ):
         super(MultiHeadCrossAttention, self).__init__()
         assert dim % num_heads == 0, "d_model must be divisible by num_heads"
 
@@ -316,15 +312,15 @@ class MultiHeadCrossAttention(nn.Module):
             if num_cond_latents is not None and num_cond_latents > 0:
                 assert shape is not None, "SHOULD pass in the shape"
                 num_cond_latents_thw = num_cond_latents * (N // shape[0])
-                x_noise = x[:, num_cond_latents_thw:]  # [B, N_noise, C]
-                output_noise = self._process_cross_attn(x_noise, cond, kv_seqlen)  # [B, N_noise, C]
+                x_noise = x[:, num_cond_latents_thw:] # [B, N_noise, C]
+                output_noise = self._process_cross_attn(x_noise, cond, kv_seqlen) # [B, N_noise, C]
                 output = torch.cat([
                     torch.zeros((B, num_cond_latents_thw, C), dtype=output_noise.dtype, device=output_noise.device),
                     output_noise
                 ], dim=1).contiguous()
             else:
                 raise NotImplementedError
-
+                
             return output
 
 
@@ -335,9 +331,9 @@ class LayerNorm_FP32(nn.LayerNorm):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         origin_dtype = inputs.dtype
         out = F.layer_norm(
-            inputs.float(),
-            self.normalized_shape,
-            None if self.weight is None else self.weight.float(),
+            inputs.float(), 
+            self.normalized_shape, 
+            None if self.weight is None else self.weight.float(), 
             None if self.bias is None else self.bias.float() ,
             self.eps
         ).to(origin_dtype)
@@ -377,8 +373,8 @@ class FinalLayer_FP32(nn.Module):
         B, N, C = x.shape
         T, _, _ = latent_shape
 
-        with amp.autocast(get_device_type(), dtype=torch.float32):
-            shift, scale = self.adaLN_modulation(t).unsqueeze(2).chunk(2, dim=-1)  # [B, T, 1, C]
+        with amp.autocast('cuda', dtype=torch.float32):
+            shift, scale = self.adaLN_modulation(t).unsqueeze(2).chunk(2, dim=-1) # [B, T, 1, C]
             x = modulate_fp32(self.norm_final, x.view(B, T, -1, C), shift, scale).view(B, N, C)
             x = self.linear(x)
         return x
@@ -573,17 +569,7 @@ class LongCatSingleStreamBlock(nn.Module):
         )
         self.ffn = FeedForwardSwiGLU(dim=hidden_size, hidden_dim=int(hidden_size * mlp_ratio))
 
-    def forward(
-            self,
-            x,
-            y,
-            t,
-            y_seqlen,
-            latent_shape,
-            num_cond_latents=None,
-            return_kv=False,
-            kv_cache=None,
-            skip_crs_attn=False):
+    def forward(self, x, y, t, y_seqlen, latent_shape, num_cond_latents=None, return_kv=False, kv_cache=None, skip_crs_attn=False):
         """
             x: [B, N, C]
             y: [1, N_valid_tokens, C]
@@ -594,45 +580,43 @@ class LongCatSingleStreamBlock(nn.Module):
         x_dtype = x.dtype
 
         B, N, C = x.shape
-        T, _, _ = latent_shape  # S != T*H*W in case of CP split on H*W.
+        T, _, _ = latent_shape # S != T*H*W in case of CP split on H*W.
 
         # compute modulation params in fp32
-        with amp.autocast(device_type=get_device_type(), dtype=torch.float32):
+        with amp.autocast(device_type='cuda', dtype=torch.float32):
             shift_msa, scale_msa, gate_msa, \
-                shift_mlp, scale_mlp, gate_mlp = \
-                self.adaLN_modulation(t).unsqueeze(2).chunk(6, dim=-1)  # [B, T, 1, C]
+            shift_mlp, scale_mlp, gate_mlp = \
+                self.adaLN_modulation(t).unsqueeze(2).chunk(6, dim=-1) # [B, T, 1, C]
 
         # self attn with modulation
         x_m = modulate_fp32(self.mod_norm_attn, x.view(B, T, -1, C), shift_msa, scale_msa).view(B, N, C)
 
         if kv_cache is not None:
             kv_cache = (kv_cache[0].to(x.device), kv_cache[1].to(x.device))
-            attn_outputs = self.attn.forward_with_kv_cache(
-                x_m, shape=latent_shape, num_cond_latents=num_cond_latents, kv_cache=kv_cache)
+            attn_outputs = self.attn.forward_with_kv_cache(x_m, shape=latent_shape, num_cond_latents=num_cond_latents, kv_cache=kv_cache)
         else:
             attn_outputs = self.attn(x_m, shape=latent_shape, num_cond_latents=num_cond_latents, return_kv=return_kv)
-
+        
         if return_kv:
             x_s, kv_cache = attn_outputs
         else:
             x_s = attn_outputs
 
-        with amp.autocast(device_type=get_device_type(), dtype=torch.float32):
-            x = x + (gate_msa * x_s.view(B, -1, N // T, C)).view(B, -1, C)  # [B, N, C]
+        with amp.autocast(device_type='cuda', dtype=torch.float32):
+            x = x + (gate_msa * x_s.view(B, -1, N//T, C)).view(B, -1, C) # [B, N, C]
         x = x.to(x_dtype)
 
         # cross attn
         if not skip_crs_attn:
             if kv_cache is not None:
                 num_cond_latents = None
-            x = x + self.cross_attn(self.pre_crs_attn_norm(x), y, y_seqlen,
-                                    num_cond_latents=num_cond_latents, shape=latent_shape)
+            x = x + self.cross_attn(self.pre_crs_attn_norm(x), y, y_seqlen, num_cond_latents=num_cond_latents, shape=latent_shape)
 
         # ffn with modulation
-        x_m = modulate_fp32(self.mod_norm_ffn, x.view(B, -1, N // T, C), shift_mlp, scale_mlp).view(B, -1, C)
+        x_m = modulate_fp32(self.mod_norm_ffn, x.view(B, -1, N//T, C), shift_mlp, scale_mlp).view(B, -1, C)
         x_s = self.ffn(x_m)
-        with amp.autocast(device_type=get_device_type(), dtype=torch.float32):
-            x = x + (gate_mlp * x_s.view(B, -1, N // T, C)).view(B, -1, C)  # [B, N, C]
+        with amp.autocast(device_type='cuda', dtype=torch.float32):
+            x = x + (gate_mlp * x_s.view(B, -1, N//T, C)).view(B, -1, C) # [B, N, C]
         x = x.to(x_dtype)
 
         if return_kv:
@@ -660,14 +644,10 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
         enable_flashattn2: bool = True,
         enable_xformers: bool = False,
         enable_bsa: bool = False,
-        bsa_params: dict = None,
-        cp_split_hw: Optional[List[int]] = None,
+        bsa_params: dict = {'sparsity': 0.9375, 'chunk_3d_shape_q': [4, 4, 4], 'chunk_3d_shape_k': [4, 4, 4]},
+        cp_split_hw: Optional[List[int]] = [1, 1],
         text_tokens_zero_pad: bool = True,
     ) -> None:
-        if bsa_params is None:
-            bsa_params = {}
-        if cp_split_hw is None:
-            cp_split_hw = []
         super().__init__()
 
         self.patch_size = patch_size
@@ -676,9 +656,7 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
         self.cp_split_hw = cp_split_hw
 
         self.x_embedder = PatchEmbed3D(patch_size, in_channels, hidden_size)
-        self.t_embedder = TimestepEmbedder(
-            t_embed_dim=adaln_tembed_dim,
-            frequency_embedding_size=frequency_embedding_size)
+        self.t_embedder = TimestepEmbedder(t_embed_dim=adaln_tembed_dim, frequency_embedding_size=frequency_embedding_size)
         self.y_embedder = CaptionEmbedder(
             in_channels=caption_channels,
             hidden_size=hidden_size,
@@ -715,15 +693,13 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
         self.lora_dict = {}
         self.active_loras = []
 
-    def enable_loras(self, lora_key_list=None):
-        if lora_key_list is None:
-            lora_key_list = []
+    def enable_loras(self, lora_key_list=[]):
         self.disable_all_loras()
-
+    
         module_loras = {}  # {module_name: [lora1, lora2, ...]}
         model_device = next(self.parameters()).device
         model_dtype = next(self.parameters()).dtype
-
+        
         for lora_key in lora_key_list:
             if lora_key in self.lora_dict:
                 for lora in self.lora_dict[lora_key].loras:
@@ -733,18 +709,18 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
                         module_loras[module_name] = []
                     module_loras[module_name].append(lora)
                 self.active_loras.append(lora_key)
-
+    
         for module_name, loras in module_loras.items():
             module = self._get_module_by_name(module_name)
             if not hasattr(module, 'org_forward'):
                 module.org_forward = module.forward
             module.forward = self._create_multi_lora_forward(module, loras)
-
+    
     def _create_multi_lora_forward(self, module, loras):
         def multi_lora_forward(x, *args, **kwargs):
             weight_dtype = x.dtype
             org_output = module.org_forward(x, *args, **kwargs)
-
+            
             total_lora_output = 0
             for lora in loras:
                 if lora.use_lora:
@@ -752,11 +728,11 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
                     lx = lora.lora_up(lx)
                     lora_output = lx.to(weight_dtype) * lora.multiplier * lora.alpha_scale
                     total_lora_output += lora_output
-
+            
             return org_output + total_lora_output
-
+        
         return multi_lora_forward
-
+    
     def _get_module_by_name(self, module_name):
         try:
             module = self
@@ -765,55 +741,53 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
             return module
         except AttributeError as e:
             raise ValueError(f"Cannot find module: {module_name}, error: {e}")
-
+    
     def disable_all_loras(self):
         for name, module in self.named_modules():
             if hasattr(module, 'org_forward'):
                 module.forward = module.org_forward
                 delattr(module, 'org_forward')
-
+        
         for lora_key, lora_network in self.lora_dict.items():
             for lora in lora_network.loras:
                 lora.to("cpu")
-
+        
         self.active_loras.clear()
 
     def enable_bsa(self,):
         for block in self.blocks:
             block.attn.enable_bsa = True
-
+    
     def disable_bsa(self,):
         for block in self.blocks:
-            block.attn.enable_bsa = False
+            block.attn.enable_bsa = False    
 
     def forward(
-        self,
-        hidden_states,
-        timestep,
-        encoder_hidden_states,
-        encoder_attention_mask=None,
+        self, 
+        hidden_states, 
+        timestep, 
+        encoder_hidden_states, 
+        encoder_attention_mask=None, 
         num_cond_latents=0,
-        return_kv=False,
-        kv_cache_dict=None,
-        skip_crs_attn=False,
+        return_kv=False, 
+        kv_cache_dict={},
+        skip_crs_attn=False, 
         offload_kv_cache=False,
         use_gradient_checkpointing=False,
         use_gradient_checkpointing_offload=False,
     ):
 
-        if kv_cache_dict is None:
-            kv_cache_dict = {}
         B, _, T, H, W = hidden_states.shape
 
         N_t = T // self.patch_size[0]
         N_h = H // self.patch_size[1]
         N_w = W // self.patch_size[2]
 
-        assert self.patch_size[0] == 1, "Currently, 3D x_embedder should not compress the temporal dimension."
+        assert self.patch_size[0]==1, "Currently, 3D x_embedder should not compress the temporal dimension."
 
         # expand the shape of timestep from [B] to [B, T]
         if len(timestep.shape) == 1:
-            timestep = timestep.unsqueeze(1).expand(-1, N_t).clone()  # [B, T]
+            timestep = timestep.unsqueeze(1).expand(-1, N_t).clone() # [B, T]
         timestep[:, :num_cond_latents] = 0
 
         dtype = hidden_states.dtype
@@ -823,7 +797,7 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
 
         hidden_states = self.x_embedder(hidden_states)  # [B, N, C]
 
-        with amp.autocast(device_type=get_device_type(), dtype=torch.float32):
+        with amp.autocast(device_type='cuda', dtype=torch.float32):
             t = self.t_embedder(timestep.float().flatten(), dtype=torch.float32).reshape(B, N_t, -1)  # [B, T, C_t]
 
         encoder_hidden_states = self.y_embedder(encoder_hidden_states)  # [B, 1, N_token, C]
@@ -834,18 +808,15 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
 
         if encoder_attention_mask is not None:
             encoder_attention_mask = encoder_attention_mask.squeeze(1).squeeze(1)
-            encoder_hidden_states = encoder_hidden_states.squeeze(1).masked_select(
-                encoder_attention_mask.unsqueeze(-1) != 0
-            ).view(1, -1, hidden_states.shape[-1])  # [1, N_valid_tokens, C]
-            y_seqlens = encoder_attention_mask.sum(dim=1).tolist()  # [B]
+            encoder_hidden_states = encoder_hidden_states.squeeze(1).masked_select(encoder_attention_mask.unsqueeze(-1) != 0).view(1, -1, hidden_states.shape[-1]) # [1, N_valid_tokens, C]
+            y_seqlens = encoder_attention_mask.sum(dim=1).tolist() # [B]
         else:
             y_seqlens = [encoder_hidden_states.shape[2]] * encoder_hidden_states.shape[0]
             encoder_hidden_states = encoder_hidden_states.squeeze(1).view(1, -1, hidden_states.shape[-1])
 
         # if self.cp_split_hw[0] * self.cp_split_hw[1] > 1:
         #     hidden_states = rearrange(hidden_states, "B (T H W) C -> B T H W C", T=N_t, H=N_h, W=N_w)
-        #     hidden_states = context_parallel_util.split_cp_2d(
-        #         hidden_states, seq_dim_hw=(2, 3), split_hw=self.cp_split_hw)
+        #     hidden_states = context_parallel_util.split_cp_2d(hidden_states, seq_dim_hw=(2, 3), split_hw=self.cp_split_hw)
         #     hidden_states = rearrange(hidden_states, "B T H W C -> B (T H W) C")
 
         # blocks
@@ -865,7 +836,7 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
                 kv_cache=kv_cache_dict.get(i, None),
                 skip_crs_attn=skip_crs_attn,
             )
-
+            
             if return_kv:
                 hidden_states, kv_cache = block_outputs
                 if offload_kv_cache:
@@ -878,8 +849,7 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
         hidden_states = self.final_layer(hidden_states, t, (N_t, N_h, N_w))  # [B, N, C=T_p*H_p*W_p*C_out]
 
         # if self.cp_split_hw[0] * self.cp_split_hw[1] > 1:
-        #     hidden_states = context_parallel_util.gather_cp_2d(
-        #         hidden_states, shape=(N_t, N_h, N_w), split_hw=self.cp_split_hw)
+        #     hidden_states = context_parallel_util.gather_cp_2d(hidden_states, shape=(N_t, N_h, N_w), split_hw=self.cp_split_hw)
 
         hidden_states = self.unpatchify(hidden_states, N_t, N_h, N_w)  # [B, C_out, H, W]
 
@@ -890,6 +860,7 @@ class LongCatVideoTransformer3DModel(torch.nn.Module):
             return hidden_states, kv_cache_dict_ret
         else:
             return hidden_states
+    
 
     def unpatchify(self, x, N_t, N_h, N_w):
         """
@@ -924,6 +895,7 @@ class LongCatVideoTransformer3DModelDictConverter:
 
     def from_diffusers(self, state_dict):
         return state_dict
-
+    
     def from_civitai(self, state_dict):
         return state_dict
+

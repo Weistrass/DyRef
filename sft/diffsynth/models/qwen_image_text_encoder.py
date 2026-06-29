@@ -1,6 +1,5 @@
-from typing import Optional, Union
-
 import torch
+from typing import Optional, Union
 
 
 class QwenImageTextEncoder(torch.nn.Module):
@@ -50,34 +49,34 @@ class QwenImageTextEncoder(torch.nn.Module):
                 "initializer_range": 0.02,
                 "intermediate_size": 18944,
                 "layer_types": [
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention",
-                    "full_attention"
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention",
+                "full_attention"
                 ],
                 "max_position_embeddings": 128000,
                 "max_window_layers": 28,
@@ -87,13 +86,13 @@ class QwenImageTextEncoder(torch.nn.Module):
                 "num_key_value_heads": 4,
                 "rms_norm_eps": 1e-06,
                 "rope_scaling": {
-                    "mrope_section": [
-                        16,
-                        24,
-                        24
-                    ],
-                    "rope_type": "default",
-                    "type": "default"
+                "mrope_section": [
+                    16,
+                    24,
+                    24
+                ],
+                "rope_type": "default",
+                "type": "default"
                 },
                 "rope_theta": 1000000.0,
                 "sliding_window": None,
@@ -145,7 +144,7 @@ class QwenImageTextEncoder(torch.nn.Module):
         self.model = Qwen2_5_VLModel(config)
         self.lm_head = torch.nn.Linear(config.text_config.hidden_size, config.text_config.vocab_size, bias=False)
         self.config = config
-
+        
     def forward(
         self,
         input_ids: torch.LongTensor = None,

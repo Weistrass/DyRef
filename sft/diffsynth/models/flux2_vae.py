@@ -1,7 +1,3 @@
-# pylint: disable=invalid-name
-
-# pylint: disable=line-too-long
-
 # Copyright 2025 The HuggingFace Team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import inspect
 import math
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union, Callable
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from einops import rearrange
+import torch.nn.functional as F
+import inspect
 
 ACT2CLS = {
     "swish": nn.SiLU,
@@ -31,7 +27,6 @@ ACT2CLS = {
     "gelu": nn.GELU,
     "relu": nn.ReLU,
 }
-
 
 def get_activation(act_fn: str) -> nn.Module:
     """Helper function to get activation function from string.
@@ -48,7 +43,6 @@ def get_activation(act_fn: str) -> nn.Module:
         return ACT2CLS[act_fn]()
     else:
         raise ValueError(f"activation function {act_fn} not found in ACT2FN mapping {list(ACT2CLS.keys())}")
-
 
 class ResnetBlock2D(nn.Module):
     r"""
@@ -107,10 +101,12 @@ class ResnetBlock2D(nn.Module):
         super().__init__()
         if time_embedding_norm == "ada_group":
             raise ValueError(
-                "This class cannot be used with `time_embedding_norm==ada_group`, please use `ResnetBlockCondNorm2D` instead", )
+                "This class cannot be used with `time_embedding_norm==ada_group`, please use `ResnetBlockCondNorm2D` instead",
+            )
         if time_embedding_norm == "spatial":
             raise ValueError(
-                "This class cannot be used with `time_embedding_norm==spatial`, please use `ResnetBlockCondNorm2D` instead", )
+                "This class cannot be used with `time_embedding_norm==spatial`, please use `ResnetBlockCondNorm2D` instead",
+            )
 
         self.pre_norm = True
         self.in_channels = in_channels
@@ -190,8 +186,7 @@ class ResnetBlock2D(nn.Module):
         hidden_states = self.nonlinearity(hidden_states)
 
         if self.upsample is not None:
-            # upsample_nearest_nhwc fails with large batch sizes. see
-            # https://github.com/huggingface/diffusers/issues/984
+            # upsample_nearest_nhwc fails with large batch sizes. see https://github.com/huggingface/diffusers/issues/984
             if hidden_states.shape[0] >= 64:
                 input_tensor = input_tensor.contiguous()
                 hidden_states = hidden_states.contiguous()
@@ -234,7 +229,6 @@ class ResnetBlock2D(nn.Module):
         output_tensor = (input_tensor + hidden_states) / self.output_scale_factor
 
         return output_tensor
-
 
 class Downsample2D(nn.Module):
     """A 2D downsampling layer with an optional convolution.
@@ -317,7 +311,6 @@ class Downsample2D(nn.Module):
         hidden_states = self.conv(hidden_states)
 
         return hidden_states
-
 
 class Upsample2D(nn.Module):
     """A 2D upsampling layer with an optional convolution.
@@ -605,7 +598,8 @@ class Attention(nn.Module):
             self.norm_k = LpNorm(p=2, dim=-1, eps=eps)
         else:
             raise ValueError(
-                f"unknown qk_norm: {qk_norm}. Should be one of None, 'layer_norm', 'fp32_layer_norm', 'layer_norm_across_heads', 'rms_norm', 'rms_norm_across_heads', 'l2'." )
+                f"unknown qk_norm: {qk_norm}. Should be one of None, 'layer_norm', 'fp32_layer_norm', 'layer_norm_across_heads', 'rms_norm', 'rms_norm_across_heads', 'l2'."
+            )
 
         if cross_attention_norm is None:
             self.norm_cross = None
@@ -787,8 +781,8 @@ class Attention(nn.Module):
         if use_memory_efficient_attention_xformers:
             if is_added_kv_processor and is_custom_diffusion:
                 raise NotImplementedError(
-                    f"Memory efficient attention is currently not supported for custom diffusion for attention processor type {
-                        self.processor}" )
+                    f"Memory efficient attention is currently not supported for custom diffusion for attention processor type {self.processor}"
+                )
             if not is_xformers_available():
                 raise ModuleNotFoundError(
                     (
@@ -988,8 +982,8 @@ class Attention(nn.Module):
         ]
         if len(unused_kwargs) > 0:
             logger.warning(
-                f"cross_attention_kwargs {unused_kwargs} are not expected by {
-                    self.processor.__class__.__name__} and will be ignored." )
+                f"cross_attention_kwargs {unused_kwargs} are not expected by {self.processor.__class__.__name__} and will be ignored."
+            )
         cross_attention_kwargs = {k: w for k, w in cross_attention_kwargs.items() if k in attn_parameters}
 
         return self.processor(
@@ -1224,7 +1218,6 @@ class Attention(nn.Module):
 
         self.fused_projections = fuse
 
-
 class AttnProcessor2_0:
     r"""
     Processor for implementing scaled dot-product attention (enabled by default if you're using PyTorch 2.0).
@@ -1318,7 +1311,6 @@ class AttnProcessor2_0:
 
         return hidden_states
 
-
 class UNetMidBlock2D(nn.Module):
     """
     A 2D UNet mid-block [`UNetMidBlock2D`] with multiple residual blocks and optional attention blocks.
@@ -1407,7 +1399,8 @@ class UNetMidBlock2D(nn.Module):
 
         if attention_head_dim is None:
             logger.warning(
-                f"It is not recommend to pass `attention_head_dim=None`. Defaulting `attention_head_dim` to `in_channels`: {in_channels}." )
+                f"It is not recommend to pass `attention_head_dim=None`. Defaulting `attention_head_dim` to `in_channels`: {in_channels}."
+            )
             attention_head_dim = in_channels
 
         for _ in range(num_layers):
@@ -1478,7 +1471,6 @@ class UNetMidBlock2D(nn.Module):
                 hidden_states = resnet(hidden_states, temb)
 
         return hidden_states
-
 
 class DownEncoderBlock2D(nn.Module):
     def __init__(
@@ -1631,7 +1623,6 @@ class UpDecoderBlock2D(nn.Module):
 
         return hidden_states
 
-
 class Encoder(nn.Module):
     r"""
     The `Encoder` layer of a variational autoencoder that encodes its input into a latent representation.
@@ -1750,7 +1741,6 @@ class Encoder(nn.Module):
         sample = self.conv_out(sample)
 
         return sample
-
 
 class Decoder(nn.Module):
     r"""
@@ -2084,6 +2074,7 @@ class Flux2VAE(torch.nn.Module):
             h = torch.cat(encoded_slices)
         else:
             h = self._encode(x)
+
 
         h = rearrange(h, "B C (H P) (W Q) -> B (C P Q) H W", P=2, Q=2)
         h = h[:, :128]

@@ -1,11 +1,8 @@
-import copy
+import torch, copy
 from typing import Union
-
-import torch
-
-from ..device import IS_NPU_AVAILABLE, get_device_name, parse_device_type
-from .disk_map import DiskMap
 from .initialization import skip_model_initialization
+from .disk_map import DiskMap
+from ..device import parse_device_type
 
 
 class AutoTorchModule(torch.nn.Module):
@@ -66,7 +63,7 @@ class AutoTorchModule(torch.nn.Module):
         return r
 
     def check_free_vram(self):
-        device = self.computation_device if not IS_NPU_AVAILABLE else get_device_name()
+        device = self.computation_device if self.computation_device != "npu" else "npu:0"
         gpu_mem_state = getattr(torch, self.computation_device_type).mem_get_info(device)
         used_memory = (gpu_mem_state[1] - gpu_mem_state[0]) / (1024**3)
         return used_memory < self.vram_limit
@@ -80,7 +77,7 @@ class AutoTorchModule(torch.nn.Module):
         if self.state != 1:
             self.to(dtype=self.onload_dtype, device=self.onload_device)
             self.state = 1
-
+            
     def param_name(self, name):
         if self.name == "":
             return name
@@ -125,7 +122,7 @@ class AutoWrappedModule(AutoTorchModule):
             self.disk_offload = True
         else:
             self.disk_offload = False
-
+            
     def load_from_disk(self, torch_dtype, device, copy_module=False):
         if copy_module:
             module = copy.deepcopy(self.module)
@@ -139,7 +136,7 @@ class AutoWrappedModule(AutoTorchModule):
         module.load_state_dict(state_dict, assign=True)
         module.to(dtype=torch_dtype, device=device)
         return module
-
+    
     def offload_to_disk(self, model: torch.nn.Module):
         for buf in model.buffers():
             # If there are some parameters are registed in buffers (not in state dict),
@@ -167,7 +164,7 @@ class AutoWrappedModule(AutoTorchModule):
             elif self.onload_device != "disk":
                 self.to(dtype=self.onload_dtype, device=self.onload_device)
             self.state = 1
-
+            
     def preparing(self):
         # onload / preparing -> preparing
         if self.state != 2:
@@ -179,7 +176,7 @@ class AutoWrappedModule(AutoTorchModule):
 
     def cast_to(self, module, dtype, device):
         return copy.deepcopy(module).to(dtype=dtype, device=device)
-
+            
     def computation(self):
         # onload / preparing -> computation (temporary)
         if self.state == 2:
@@ -199,7 +196,7 @@ class AutoWrappedModule(AutoTorchModule):
             self.preparing()
         module = self.computation()
         return module(*args, **kwargs)
-
+    
     def __getattr__(self, name):
         if name in self.__dict__ or name == "module":
             return super().__getattr__(name)
@@ -242,7 +239,7 @@ class AutoWrappedNonRecurseModule(AutoWrappedModule):
         )
         if self.disk_offload:
             self.required_params = [name for name, _ in self.module.named_parameters(recurse=False)]
-
+            
     def load_from_disk(self, torch_dtype, device, copy_module=False):
         if copy_module:
             module = copy.deepcopy(self.module)
@@ -255,15 +252,15 @@ class AutoWrappedNonRecurseModule(AutoWrappedModule):
             state_dict[name] = param
         module.load_state_dict(state_dict, assign=True, strict=False)
         return module
-
+    
     def offload_to_disk(self, model: torch.nn.Module):
         for name in self.required_params:
             getattr(self, name).to("meta")
-
+    
     def cast_to(self, module, dtype, device):
         # Parameter casting is implemented in the model architecture.
         return module
-
+    
     def __getattr__(self, name):
         if name in self.__dict__ or name == "module":
             return super().__getattr__(name)
@@ -309,18 +306,18 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
         self.bias = module.bias
         self.state = 0
         self.name = name
-        self.lora_a_weights = []
-        self.lora_b_weights = []
+        self.lora_A_weights = []
+        self.lora_B_weights = []
         self.lora_merger = None
         self.enable_fp8 = computation_dtype in [torch.float8_e4m3fn, torch.float8_e4m3fnuz]
         self.computation_device_type = parse_device_type(self.computation_device)
-
+        
         if offload_dtype == "disk":
             self.disk_map = disk_map
             self.disk_offload = True
         else:
             self.disk_offload = False
-
+    
     def fp8_linear(
         self,
         input: torch.Tensor,
@@ -358,17 +355,16 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
         new_shape = origin_shape[:-1] + result.shape[-1:]
         result = result.reshape(new_shape)
         return result
-
+            
     def load_from_disk(self, torch_dtype, device, assign=True):
         weight = self.disk_map[self.name + ".weight"].to(dtype=torch_dtype, device=device)
         bias = None if self.bias is None else self.disk_map[self.name + ".bias"].to(dtype=torch_dtype, device=device)
         if assign:
             state_dict = {"weight": weight}
-            if bias is not None:
-                state_dict["bias"] = bias
+            if bias is not None: state_dict["bias"] = bias
             self.load_state_dict(state_dict, assign=True)
         return weight, bias
-
+    
     def offload(self):
         # offload / onload / preparing -> offload
         if self.state != 0:
@@ -386,7 +382,7 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
             elif self.onload_device != "disk":
                 self.to(dtype=self.onload_dtype, device=self.onload_device)
             self.state = 1
-
+            
     def preparing(self):
         # onload / preparing -> preparing
         if self.state != 2:
@@ -395,7 +391,7 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
             elif self.preparing_device != "disk":
                 self.to(dtype=self.preparing_dtype, device=self.preparing_device)
             self.state = 2
-
+            
     def computation(self):
         # onload / preparing -> computation (temporary)
         if self.state == 2:
@@ -408,8 +404,7 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
             weight, bias = self.load_from_disk(self.computation_dtype, self.computation_device, assign=False)
         else:
             weight = self.cast_to(self.weight, self.computation_dtype, self.computation_device)
-            bias = None if self.bias is None else self.cast_to(
-                self.bias, self.computation_dtype, self.computation_device)
+            bias = None if self.bias is None else self.cast_to(self.bias, self.computation_dtype, self.computation_device)
         return weight, bias
 
     def linear_forward(self, x, weight, bias):
@@ -421,64 +416,40 @@ class AutoWrappedLinear(torch.nn.Linear, AutoTorchModule):
 
     def lora_forward(self, x, out):
         if self.lora_merger is None:
-            for lora_a, lora_b in zip(self.lora_a_weights, self.lora_b_weights):
-                out = out + x @ lora_a.T.to(device=x.device,
-                                            dtype=x.dtype) @ lora_b.T.to(device=x.device,
-                                                                         dtype=x.dtype)
+            for lora_A, lora_B in zip(self.lora_A_weights, self.lora_B_weights):
+                out = out + x @ lora_A.T @ lora_B.T
         else:
             lora_output = []
-            for lora_a, lora_b in zip(self.lora_a_weights, self.lora_b_weights):
-                lora_output.append(x @ lora_a.T @ lora_b.T)
+            for lora_A, lora_B in zip(self.lora_A_weights, self.lora_B_weights):
+                lora_output.append(x @ lora_A.T @ lora_B.T)
             lora_output = torch.stack(lora_output)
             out = self.lora_merger(out, lora_output)
         return out
-
+    
     def forward(self, x, *args, **kwargs):
         if self.state == 1 and (self.vram_limit is None or self.check_free_vram()):
             self.preparing()
         weight, bias = self.computation()
         out = self.linear_forward(x, weight, bias)
-        if len(self.lora_a_weights) > 0:
+        if len(self.lora_A_weights) > 0:
             out = self.lora_forward(x, out)
         return out
 
 
-def enable_vram_management_recursively(
-        model: torch.nn.Module,
-        module_map: dict,
-        vram_config: dict,
-        vram_limit=None,
-        name_prefix="",
-        disk_map=None,
-        **kwargs):
+def enable_vram_management_recursively(model: torch.nn.Module, module_map: dict, vram_config: dict, vram_limit=None, name_prefix="", disk_map=None, **kwargs):
     if isinstance(model, AutoWrappedNonRecurseModule):
         model = model.module
     for name, module in model.named_children():
         layer_name = name if name_prefix == "" else name_prefix + "." + name
         for source_module, target_module in module_map.items():
             if isinstance(module, source_module):
-                module_ = target_module(module, **vram_config, vram_limit=vram_limit,
-                                        name=layer_name, disk_map=disk_map, **kwargs)
+                module_ = target_module(module, **vram_config, vram_limit=vram_limit, name=layer_name, disk_map=disk_map, **kwargs)
                 if isinstance(module_, AutoWrappedNonRecurseModule):
-                    enable_vram_management_recursively(
-                        module_,
-                        module_map,
-                        vram_config,
-                        vram_limit=vram_limit,
-                        name_prefix=layer_name,
-                        disk_map=disk_map,
-                        **kwargs)
+                    enable_vram_management_recursively(module_, module_map, vram_config, vram_limit=vram_limit, name_prefix=layer_name, disk_map=disk_map, **kwargs)
                 setattr(model, name, module_)
                 break
         else:
-            enable_vram_management_recursively(
-                module,
-                module_map,
-                vram_config,
-                vram_limit=vram_limit,
-                name_prefix=layer_name,
-                disk_map=disk_map,
-                **kwargs)
+            enable_vram_management_recursively(module, module_map, vram_config, vram_limit=vram_limit, name_prefix=layer_name, disk_map=disk_map, **kwargs)
 
 
 def fill_vram_config(model, vram_config):
@@ -489,20 +460,12 @@ def fill_vram_config(model, vram_config):
     vram_config_["preparing_device"] = vram_config["computation_device"]
     for k in vram_config:
         if vram_config[k] != vram_config_[k]:
-            print(
-                f"No fine-grained VRAM configuration is provided for {
-                    model.__class__.__name__}. [`onload`, `preparing`, `computation`] will be the same state. `vram_config` is set to {vram_config_}")  # pylint: disable=line-too-long
+            print(f"No fine-grained VRAM configuration is provided for {model.__class__.__name__}. [`onload`, `preparing`, `computation`] will be the same state. `vram_config` is set to {vram_config_}")
             break
     return vram_config_
 
 
-def enable_vram_management(
-        model: torch.nn.Module,
-        module_map: dict,
-        vram_config: dict,
-        vram_limit=None,
-        disk_map=None,
-        **kwargs):
+def enable_vram_management(model: torch.nn.Module, module_map: dict, vram_config: dict, vram_limit=None, disk_map=None, **kwargs):
     for source_module, target_module in module_map.items():
         # If no fine-grained VRAM configuration is provided, the entire model will be managed uniformly.
         if isinstance(model, source_module):
@@ -510,13 +473,7 @@ def enable_vram_management(
             model = target_module(model, **vram_config, vram_limit=vram_limit, disk_map=disk_map, **kwargs)
             break
     else:
-        enable_vram_management_recursively(
-            model,
-            module_map,
-            vram_config,
-            vram_limit=vram_limit,
-            disk_map=disk_map,
-            **kwargs)
+        enable_vram_management_recursively(model, module_map, vram_config, vram_limit=vram_limit, disk_map=disk_map, **kwargs)
     # `vram_management_enabled` is a flag that allows the pipeline to determine whether VRAM management is enabled.
     model.vram_management_enabled = True
     return model

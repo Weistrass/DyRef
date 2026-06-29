@@ -1,14 +1,7 @@
-# pylint: disable=line-too-long
-
-import importlib
-import json
-
-import torch
-
-from ..configs import (MODEL_CONFIGS, VERSION_CHECKER_MAPS,
-                       VRAM_MANAGEMENT_MODULE_MAPS)
-from ..core.loader import hash_model_file, load_model
+from ..core.loader import load_model, hash_model_file
 from ..core.vram import AutoWrappedModule
+from ..configs import MODEL_CONFIGS, VRAM_MANAGEMENT_MODULE_MAPS
+import importlib, json, torch
 
 
 class ModelPool:
@@ -16,30 +9,27 @@ class ModelPool:
         self.model = []
         self.model_name = []
         self.model_path = []
-
+        
     def import_model_class(self, model_class):
         split = model_class.rfind(".")
-        model_resource, model_class = model_class[:split], model_class[split + 1:]
+        model_resource, model_class = model_class[:split], model_class[split+1:]
         model_class = importlib.import_module(model_resource).__getattribute__(model_class)
         return model_class
-
+    
     def need_to_enable_vram_management(self, vram_config):
         return vram_config["offload_dtype"] is not None and vram_config["offload_device"] is not None
-
+    
     def fetch_module_map(self, model_class, vram_config):
         if self.need_to_enable_vram_management(vram_config):
             if model_class in VRAM_MANAGEMENT_MODULE_MAPS:
-                vram_module_map = VRAM_MANAGEMENT_MODULE_MAPS[model_class] if model_class not in VERSION_CHECKER_MAPS else VERSION_CHECKER_MAPS[model_class](
-                )
-                module_map = {self.import_model_class(source): self.import_model_class(target)
-                              for source, target in vram_module_map.items()}
+                module_map = {self.import_model_class(source): self.import_model_class(target) for source, target in VRAM_MANAGEMENT_MODULE_MAPS[model_class].items()}
             else:
                 module_map = {self.import_model_class(model_class): AutoWrappedModule}
         else:
             module_map = None
         return module_map
-
-    def load_model_file(self, config, path, vram_config, vram_limit=None, state_dict=None):
+    
+    def load_model_file(self, config, path, vram_config, vram_limit=None):
         model_class = self.import_model_class(config["model_class"])
         model_config = config.get("extra_kwargs", {})
         if "state_dict_converter" in config:
@@ -53,10 +43,9 @@ class ModelPool:
             state_dict_converter,
             use_disk_map=True,
             vram_config=vram_config, module_map=module_map, vram_limit=vram_limit,
-            state_dict=state_dict,
         )
         return model
-
+    
     def default_vram_config(self):
         vram_config = {
             "offload_dtype": None,
@@ -69,8 +58,8 @@ class ModelPool:
             "computation_device": "cpu",
         }
         return vram_config
-
-    def auto_load_model(self, path, vram_config=None, vram_limit=None, clear_parameters=False, state_dict=None):
+    
+    def auto_load_model(self, path, vram_config=None, vram_limit=None, clear_parameters=False):
         print(f"Loading models from: {json.dumps(path, indent=4)}")
         if vram_config is None:
             vram_config = self.default_vram_config()
@@ -78,22 +67,18 @@ class ModelPool:
         loaded = False
         for config in MODEL_CONFIGS:
             if config["model_hash"] == model_hash:
-                model = self.load_model_file(config, path, vram_config, vram_limit=vram_limit, state_dict=state_dict)
-                if clear_parameters:
-                    self.clear_parameters(model)
+                model = self.load_model_file(config, path, vram_config, vram_limit=vram_limit)
+                if clear_parameters: self.clear_parameters(model)
                 self.model.append(model)
                 model_name = config["model_name"]
                 self.model_name.append(model_name)
                 self.model_path.append(path)
-                model_info = {
-                    "model_name": model_name,
-                    "model_class": config["model_class"],
-                    "extra_kwargs": config.get("extra_kwargs")}
+                model_info = {"model_name": model_name, "model_class": config["model_class"], "extra_kwargs": config.get("extra_kwargs")}
                 print(f"Loaded model: {json.dumps(model_info, indent=4)}")
                 loaded = True
         if not loaded:
             raise ValueError(f"Cannot detect the model type. File: {path}. Model hash: {model_hash}")
-
+    
     def fetch_model(self, model_name, index=None):
         fetched_models = []
         fetched_model_paths = []
@@ -110,22 +95,13 @@ class ModelPool:
         else:
             if index is None:
                 model = fetched_models[0]
-                print(
-                    f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {
-                        json.dumps(
-                            fetched_model_paths[0],
-                            indent=4)}.")
+                print(f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {json.dumps(fetched_model_paths[0], indent=4)}.")
             elif isinstance(index, int):
                 model = fetched_models[:index]
-                print(
-                    f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {json.dumps(fetched_model_paths[:index], indent=4)}.")
+                print(f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {json.dumps(fetched_model_paths[:index], indent=4)}.")
             else:
                 model = fetched_models
-                print(
-                    f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {
-                        json.dumps(
-                            fetched_model_paths,
-                            indent=4)}.")
+                print(f"More than one {model_name} models are loaded: {fetched_model_paths}. Using {model_name} from {json.dumps(fetched_model_paths, indent=4)}.")
         return model
 
     def clear_parameters(self, model: torch.nn.Module):

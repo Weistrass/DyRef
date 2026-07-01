@@ -5,17 +5,21 @@ import sys, os
 import json
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-transformer_ckpts_list = ['/data1/huangwenwang/models/Qwen-Image-Edit-2511/transformer/diffusion_pytorch_model-00001-of-00005.safetensors',
-                        '/data1/huangwenwang/models/Qwen-Image-Edit-2511/transformer/diffusion_pytorch_model-00002-of-00005.safetensors',
-                        '/data1/huangwenwang/models/Qwen-Image-Edit-2511/transformer/diffusion_pytorch_model-00003-of-00005.safetensors',
-                        '/data1/huangwenwang/models/Qwen-Image-Edit-2511/transformer/diffusion_pytorch_model-00004-of-00005.safetensors',
-                        '/data1/huangwenwang/models/Qwen-Image-Edit-2511/transformer/diffusion_pytorch_model-00005-of-00005.safetensors'
-                        ]
+# change to your model path
+path = '/m2v_intern/huangwenwang03/models/Qwen-Image-Edit-2511'
 
-text_encoder_ckpts_list = ['/data1/huangwenwang/models/Qwen-Image-Edit-2511/text_encoder/model-00001-of-00004.safetensors',
-                  '/data1/huangwenwang/models/Qwen-Image-Edit-2511/text_encoder/model-00002-of-00004.safetensors',
-                  '/data1/huangwenwang/models/Qwen-Image-Edit-2511/text_encoder/model-00003-of-00004.safetensors',
-                  '/data1/huangwenwang/models/Qwen-Image-Edit-2511/text_encoder/model-00004-of-00004.safetensors'] 
+transformer_ckpts_list = [
+    f'{path}/transformer/diffusion_pytorch_model-00001-of-00005.safetensors',
+    f'{path}/transformer/diffusion_pytorch_model-00002-of-00005.safetensors',
+    f'{path}/transformer/diffusion_pytorch_model-00003-of-00005.safetensors',
+    f'{path}/transformer/diffusion_pytorch_model-00004-of-00005.safetensors',
+    f'{path}/transformer/diffusion_pytorch_model-00005-of-00005.safetensors',
+]
+
+text_encoder_ckpts_list = [f'{path}/text_encoder/model-00001-of-00004.safetensors',
+                  f'{path}/text_encoder/model-00002-of-00004.safetensors',
+                  f'{path}/text_encoder/model-00003-of-00004.safetensors',
+                  f'{path}/text_encoder/model-00004-of-00004.safetensors'] 
 
 
 pipe = QwenImagePipeline.from_pretrained(
@@ -24,15 +28,15 @@ pipe = QwenImagePipeline.from_pretrained(
     model_configs=[
         ModelConfig(path=transformer_ckpts_list),
         ModelConfig(path=text_encoder_ckpts_list),
-        ModelConfig(path='/data1/huangwenwang/models/Qwen-Image-Edit-2511/vae/diffusion_pytorch_model.safetensors'),
+        ModelConfig(path=f'{path}/vae/diffusion_pytorch_model.safetensors'),
     ],
-    processor_config=ModelConfig(path='/data1/huangwenwang/models/Qwen-Image-Edit-2511/processor'),
+    processor_config=ModelConfig(path=f'{path}/processor'),
 )
 # 加载lora文件，权重1
-pipe.load_lora(pipe.dit, "/home/huangwenwang/Projects_store/DyRef/checkpoints/qwen2511-gdpo-rank64-add2k5-6ref-csd-flat_sig0.65-gamma2/epoch-30.safetensors")
+pipe.load_lora(pipe.dit, "/home/huangwenwang/projects_store/DyRef/checkpoints/qwen2511-gdpo-rank64-add2k5-6ref-csd-flat_sig0.65-gamma2/epoch-30.safetensors")
 
 # 权重2 
-#pipe.load_lora(pipe.dit, "/home/huangwenwang/Projects_store/DyRef/checkpoints/qwen2511-gdpo-rank64-add2k5-6ref-csd-flat_sig0.65-gamma5/epoch-20.safetensors")
+#pipe.load_lora(pipe.dit, "/home/huangwenwang/projects_store/DyRef/checkpoints/qwen2511-gdpo-rank64-add2k5-6ref-csd-flat_sig0.65-gamma5/epoch-20.safetensors")
 
 # case1
 # prompt = "A woman wearing a wide-brimmed hat in reference image 1 stands beside a brown yak grazing on lush green grass in reference image 2. With visual aesthetics matching reference image 3. Against the backdrop shown in reference image 4."
@@ -85,6 +89,8 @@ images = [
 #     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/style/reference.png").convert("RGB"),
 # ]
 #edit_image = [Image.open("data/example_image_dataset/edit/ref1_1.png"), Image.open("data/example_image_dataset/edit/ref1_2.png"), Image.open("data/example_image_dataset/edit/ref1_3.png"),]
+
+# seed = 1
 image_gen = pipe(prompt, edit_image=images, seed=1, num_inference_steps=20, height=1024,
                 width=1024, edit_image_auto_resize=True, zero_cond_t=True, negative_prompt = "", cfg_scale = 4.0,)
-image_gen.save(fp="generate_results/case2.png")
+image_gen.save(fp="generate_results/case2_a800_seed42.png")

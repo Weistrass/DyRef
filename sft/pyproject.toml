@@ -23,6 +23,7 @@ dependencies = [
     "ftfy",
     "pandas",
     "accelerate",
+    "deepspeed",
     "peft",
     "datasets",
 ]

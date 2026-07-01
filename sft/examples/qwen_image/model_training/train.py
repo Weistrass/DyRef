@@ -74,28 +74,28 @@ class QwenImageTrainingModule(DiffusionTrainingModule):
             "sft": lambda pipe,
             inputs_shared,
             inputs_posi,
-            inputs_nega: flow_match_sft_loss(
+            inputs_nega: FlowMatchSFTLoss(
                 pipe,
                 **inputs_shared,
                 **inputs_posi),
             "sft:train": lambda pipe,
             inputs_shared,
             inputs_posi,
-            inputs_nega: flow_match_sft_loss(
+            inputs_nega: FlowMatchSFTLoss(
                 pipe,
                 **inputs_shared,
                 **inputs_posi),
             "direct_distill": lambda pipe,
             inputs_shared,
             inputs_posi,
-            inputs_nega: direct_distill_loss(
+            inputs_nega: DirectDistillLoss(
                 pipe,
                 **inputs_shared,
                 **inputs_posi),
             "direct_distill:train": lambda pipe,
             inputs_shared,
             inputs_posi,
-            inputs_nega: direct_distill_loss(
+            inputs_nega: DirectDistillLoss(
                 pipe,
                 **inputs_shared,
                 **inputs_posi),

@@ -50,6 +50,10 @@ dependencies = [
     "pydantic>=2.8.0",
     "pyyaml>=6.0",
     "tqdm",
+    "swanlab",
+
+    # RL Reward
+    "git+https://github.com/openai/CLIP.git",
 ]
 
 [project.optional-dependencies]

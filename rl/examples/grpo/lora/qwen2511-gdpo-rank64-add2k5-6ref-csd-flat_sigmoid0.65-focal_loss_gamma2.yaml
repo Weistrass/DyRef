@@ -1,24 +1,25 @@
 # Environment Configuration
 launcher: "accelerate"  # Options: accelerate
 config_file: config/deepspeed/deepspeed_zero2.yaml
-num_processes: 8  # Number of processes to launch (overrides config file)
+num_processes: 2  # Number of processes to launch (overrides config file)
 main_process_port: 29500
 mixed_precision: "bf16"  # Options: no, fp16, bf16
 
-run_name: "qwen-2511-gdpo-rank64-add2k5-6ref-csd-siglipv2_flat_sigmoid0.65-focal_loss_gamma2"
+run_name: "qwen-2511-gdpo-rank64-add2k5-6ref-csd-siglipv2_flat_sigmoid0.65-focal_loss_gamma2-debug"
 project: "Flow-Factory"  # Project name for logging
 logging_backend: "swanlab"  # Options: wandb, swanlab, none
+swanlab_api_key: "Iih8J46TkqmiqKrXvoji5"
 
 # Data Configuration
 data:
-  dataset_dir: "/path/to/your/train_add_2k5_6ref"  # Path to dataset folder
-  image_dir: "/path/to/your/datasets"
-  preprocessing_batch_size: 8  # Batch size for preprocessing
-  dataloader_num_workers: 8  # Number of workers for DataLoader
+  dataset_dir: "dataset/DyRef_rl"  # Path to dataset folder
+  image_dir: "/m2v_intern/huangwenwang03/datasets"
+  preprocessing_batch_size: 2  # Batch size for preprocessing
+  dataloader_num_workers: 2  # Number of workers for DataLoader
   enable_preprocess: true  # Enable dataset preprocessing
   force_reprocess: false  # Force reprocessing of the dataset
-  cache_dir: "/path/to/your/.cache/flow_factory/qwen2511-gdpo" # Cache directory for preprocessed datasets
-  max_dataset_size: 12320  # Limit the maximum number of samples in the dataset
+  cache_dir: "/home/huangwenwang/projects_store/DyRef/training_data_cache/Qwen-Image-Edit-2511-rank32" # Cache directory for preprocessed datasets
+  max_dataset_size: 4  # Limit the maximum number of samples in the dataset
 
 
 # Model Configuration
@@ -27,14 +28,14 @@ model:
   lora_rank : 64
   lora_alpha : 64
   target_modules: ["to_q","to_k","to_v","add_q_proj","add_k_proj","add_v_proj","to_out.0","to_add_out","img_mlp.net.2","img_mod.1","txt_mlp.net.2","txt_mod.1"]
-  model_name_or_path: "/path/to/your/Qwen-Image-Edit-2511"  # Qwen/Qwen-Image-Edit-2511
+  model_name_or_path: "/m2v_intern/huangwenwang03/models/Qwen-Image-Edit-2511"  # Qwen/Qwen-Image-Edit-2511
   zero_cond_t: true # Special parameter for Qwen-Image-Edit-2511. Please enable it for this model.
   model_type: "qwen-image-edit-plus"
-  resume_path: "/path/to/your/sft_lora_checkpoint_d2p"  # Path to load SFT LoRA checkpoint (converted to PEFT format)
+  resume_path: null #"/path/to/your/sft_lora_checkpoint_d2p"  # Path to load SFT LoRA checkpoint (converted to PEFT format)
   resume_training_state: false
 
 log:
-  save_dir: "/path/to/your/output_dir"  # Directory to save model checkpoints and logs
+  save_dir: "/home/huangwenwang/projects_store/DyRef/checkpoints/debug_rl_stage"  # Directory to save model checkpoints and logs
   save_freq: 10  # Save frequency in epochs (0 to disable)
   save_model_only: true  # Save only the model weights (not optimizer, scheduler, etc.)
 
@@ -50,9 +51,9 @@ train:
   
   # Batch and sampling
   per_device_batch_size: 1
-  group_size: 24  # Group size for GRPO sampling
+  group_size: 2  # Group size for GRPO sampling
   global_std: false  # Use global std for advantage normalization
-  unique_sample_num_per_epoch: 24
+  unique_sample_num_per_epoch: 2
   gradient_step_per_epoch: 2
   
   # Clipping
@@ -112,8 +113,9 @@ rewards:
     device: "cuda"
     dtype: bfloat16
     extra_kwargs:
-      model_path: "/path/to/your/CSD/pretrainedmodels/pytorch_model.bin"  # CSD pretrained model
-      dataset_dir: "/path/to/your/train_add_2k5_6ref"
+      model_path: "../CSD/pretrainedmodels/pytorch_model.bin"  # CSD pretrained model
+      dataset_dir: "dataset/DyRef_rl"
+      image_dir: "/m2v_intern/huangwenwang03/datasets"
       arch: "vit_large"
       content_proj_head: "default"
       reduce: "mean"
@@ -125,13 +127,13 @@ rewards:
     dtype: bfloat16
     extra_kwargs:
       similarity_type: "siglip"  # options: clip | dinov2 | clip+dinov2 | siglip | qwenvl
-      dinov2_model_name_or_path: "/path/to/your/facebook/dinov2-base"
-      model_name_or_path: "/path/to/your/openai/clip-vit-large-patch14"
-      siglip_model_name_or_path: "/path/to/your/siglip2-base-patch16-384"
+      dinov2_model_name_or_path: "/m2v_intern/huangwenwang03/models/facebook/dinov2-base"
+      model_name_or_path: "/m2v_intern/huangwenwang03/models/openai/clip-vit-large-patch14"
+      siglip_model_name_or_path: "/m2v_intern/huangwenwang03/models/google/siglip2-base-patch16-384"
       qwenvl_model_name_or_path: "/path/to/your/Qwen3-VL-4B-Instruct"
       reduce: "mean"
       siglip_similarity_mode: "flat"
-      dataset_dir: "/path/to/your/train_add_2k5_6ref"
+      dataset_dir: "dataset/DyRef_rl"
       tau: 0.65
       is_inter_group_dis: true
       k_mode: "increase"

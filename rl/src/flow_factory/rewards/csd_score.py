@@ -11,7 +11,8 @@ from ..hparams import RewardArguments
 from ..utils.image import tensor_to_pil_image, tensor_list_to_pil_image
 
 # 导入CSD相关模块
-CSD_PROJECT_PATH = os.environ.get("CSD_PROJECT_PATH", "")
+# CSD_PROJECT_PATH = os.environ.get("CSD_PROJECT_PATH", "")
+CSD_PROJECT_PATH = "/home/huangwenwang/projects/DyRef/CSD"
 if os.path.exists(CSD_PROJECT_PATH):
     sys.path.insert(0, CSD_PROJECT_PATH)
     from CSD.model import CSD_CLIP
@@ -22,7 +23,7 @@ else:
 
 
 class CSDRewardModel(PointwiseRewardModel):
-    DEFAULT_MODEL_PATH = ""
+    DEFAULT_MODEL_PATH = f"{CSD_PROJECT_PATH}/CSD/pretrainedmodels/pytorch_model.bin"
     DEFAULT_ARCH = "vit_large"
     DEFAULT_CONTENT_PROJ_HEAD = "default"
     required_fields = ("image", "split", "index")

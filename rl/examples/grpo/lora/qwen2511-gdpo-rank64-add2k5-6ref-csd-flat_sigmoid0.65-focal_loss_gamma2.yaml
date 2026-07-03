@@ -1,25 +1,25 @@
 # Environment Configuration
 launcher: "accelerate"  # Options: accelerate
 config_file: config/deepspeed/deepspeed_zero2.yaml
-num_processes: 2  # Number of processes to launch (overrides config file)
+num_processes: 8  # Number of processes to launch (overrides config file)
 main_process_port: 29500
 mixed_precision: "bf16"  # Options: no, fp16, bf16
 
 run_name: "qwen-2511-gdpo-rank64-add2k5-6ref-csd-siglipv2_flat_sigmoid0.65-focal_loss_gamma2-debug"
 project: "Flow-Factory"  # Project name for logging
 logging_backend: "swanlab"  # Options: wandb, swanlab, none
-swanlab_api_key: "Iih8J46TkqmiqKrXvoji5"
+# swanlab_api_key: ""
 
 # Data Configuration
 data:
   dataset_dir: "dataset/DyRef_rl"  # Path to dataset folder
   image_dir: "/m2v_intern/huangwenwang03/datasets"
-  preprocessing_batch_size: 2  # Batch size for preprocessing
-  dataloader_num_workers: 2  # Number of workers for DataLoader
+  preprocessing_batch_size: 8  # Batch size for preprocessing
+  dataloader_num_workers: 8  # Number of workers for DataLoader
   enable_preprocess: true  # Enable dataset preprocessing
   force_reprocess: false  # Force reprocessing of the dataset
   cache_dir: "/home/huangwenwang/projects_store/DyRef/training_data_cache/Qwen-Image-Edit-2511-rank32" # Cache directory for preprocessed datasets
-  max_dataset_size: 4  # Limit the maximum number of samples in the dataset
+  max_dataset_size: 12320  # Limit the maximum number of samples in the dataset
 
 
 # Model Configuration
@@ -51,9 +51,9 @@ train:
   
   # Batch and sampling
   per_device_batch_size: 1
-  group_size: 2  # Group size for GRPO sampling
+  group_size: 24  # Group size for GRPO sampling
   global_std: false  # Use global std for advantage normalization
-  unique_sample_num_per_epoch: 2
+  unique_sample_num_per_epoch: 24
   gradient_step_per_epoch: 2
   
   # Clipping

@@ -12,7 +12,7 @@ logging_backend: "swanlab"  # Options: wandb, swanlab, none
 
 # Data Configuration
 data:
-  dataset_dir: "/path/to/your/train_add_2k5_6ref"  # Path to dataset folder
+  dataset_dir: "dataset/DyRef_rl"  # Path to dataset folder
   image_dir: "/path/to/your/datasets"
   preprocessing_batch_size: 8  # Batch size for preprocessing
   dataloader_num_workers: 8  # Number of workers for DataLoader
@@ -112,8 +112,9 @@ rewards:
     device: "cuda"
     dtype: bfloat16
     extra_kwargs:
-      model_path: "/path/to/your/CSD/pretrainedmodels/pytorch_model.bin"
-      dataset_dir: "/path/to/your/train_add_2k5_6ref"
+      model_path: "../CSD/pretrainedmodels/pytorch_model.bin"
+      dataset_dir: "dataset/DyRef_rl"
+      image_dir: "path to your training_data"
       arch: "vit_large"
       content_proj_head: "default"
       reduce: "mean"

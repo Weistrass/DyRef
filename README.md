@@ -1,6 +1,6 @@
 <div align="center">
 
-# DyRef: Scaling Multi-Reference Image Generation with Dynamic Reward Optimization
+# Scaling Multi-Reference Image Generation with Dynamic Reward Optimization
 
 Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, Mengfei Huang<sup>1</sup>, Yulin Li<sup>1</sup>, Gan Liu<sup>2</sup>, Jing Cai<sup>2</sup>, Yancheng He<sup>2</sup>, Zhuotao Tian<sup>1,3,†</sup>
 
@@ -19,7 +19,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 </div>
 
-## 🔖Table of Contents
+## 🔖 Table of Contents
 
 1. [News](#news)
 2. [Todo List](#todo-list)
@@ -33,12 +33,12 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 10. [Acknowledgement](#acknowledgement)
 11. [Citation](#citation)
 
-## 🔥 News
+## 🔥News
 
 - [2026.06.18] Our paper has been accepted by ECCV 2026 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
 - [2026.07.02] We have released the training and inference code of DyRef, along with the corresponding training data, benchmark, and model weights. Feel free to use it! ⭐⭐⭐
 
-## 📋 Todo List
+## 📋Todo List
 
 - [x] Release our paper on arXiv.
 - [x] Open-source the training code of DyRef for Qwen-Image-Edit-2511, and Flux2-klein-base.
@@ -48,7 +48,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 - [ ] Improve code efficiency and structure.
 - [ ] Release the project page
 
-## ✨ Highlights
+## ✨Highlights
 
 <p align="center">
   <img src="assets/figure1.png" alt="DyRef Performance" />
@@ -62,27 +62,27 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 3. DyRef consistently enhances open-source models, including Qwen-Image-Edit-2511 and FLUX.2-klein-base, on MRIG benchmarks (**OmniRef-Bench**, **MultiBanana**, and **OmniContext**) while also improving single-image editing performance on **ImgEdit** and **DreamBench++**, without compromising the foundation models' other capabilities.
 
-## 🖼️ Results Gallery
+## 🖼️Results Gallery
 In this part, we present qualitative comparisons between our method and existing approaches across various combinations of reference types. The prompts shown in the figures are abbreviated versions for visualization purposes and are not the actual prompts used during inference. In addition, we use color to indicate the attributes specified in the user prompt and their corresponding reference images.
 
 ![case1](assets/success_cases_p3_1_cropped-1.png)
 
 ![case2](assets/success_cases_p3_2_cropped-1.png)
 
-## 💡 Motivation
+## 💡Motivation
 ![Motivation](assets/motivation.png)
 
 In this work, we observe that the performance of current mainstream open-source image generation models degrades substantially as the number of reference images increases and the diversity of reference types expands. This limitation significantly restricts their potential for professional applications, such as creative image generation and video keyframe generation.
 
 
-## 🧩 Method
+## 🧩Method
 ![Method](assets/method.png)
 
 **Illustration of DyRef**. To address this issue, we propose DyRef, a two-stage training framework. 
 
 In Stage I, we employ SFT to equip the model with the basic capability to handle complex MRIG tasks. In Stage II, **(a) DRS** enlarges the reward differences across samples for better training, and **(b) DAR** enhances the model’s focus on samples with numerous mixed-type reference images.
 
-## ⚙️ Installation
+## ⚙️Installation
 
 DyRef uses separate Conda environments for SFT, RL, and benchmark evaluation because each component has its own dependency requirements.
 
@@ -117,7 +117,7 @@ For example:
 hf download Qwen/Qwen-Image-Edit-2511 --local-dir "your path to save this model"
 ```
 
-## 🚀 Quickstart
+## 🚀Quickstart
 
 ### Model Inference
 Before running the following command, please download the [Qwen-Image-Edit-2511](https://huggingface.co/Qwen/Qwen-Image-Edit-2511) model and the [pretrained LoRA weights](https://huggingface.co/Weistrass/Qwen-Image-Edit-2511-DyRef) we provide.
@@ -157,7 +157,7 @@ cd DyRef/rl
 bash scripts/qwen2511-gdpo-rank64-add2k5-csd-siglipv2_flat-sigmoid0.65-focal_loss.sh
 ```
 
-## 📊 Evaluation
+## 📊Evaluation
 
 OmniRef-Bench is designed to measure whether generated images preserve and combine multiple references in a balanced way.
 
@@ -207,7 +207,7 @@ bash eval_suite.sh \
 
 For more details, see [benchmark/README.md](benchmark/README.md).
 
-## 🙏 Acknowledgement
+## 🙏Acknowledgement
 
 DyRef is built on several excellent open-source projects:
 - [DiffSynth-Studio](https://github.com/modelscope/diffsynth-studio) for SFT training infrastructure
@@ -216,7 +216,7 @@ DyRef is built on several excellent open-source projects:
 - [CSD](https://github.com/learn2phoenix/CSD) for style consistency evaluation
 - [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) for pose evaluation
 
-## 📝 Citation
+## 📝Citation
 
 If you find DyRef useful in your research, please consider citing it:
 

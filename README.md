@@ -35,7 +35,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 ## 🔥 News
 
-- [2026.06.16] Our paper has been accepted by ECCV 2026 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
+- [2026.06.18] Our paper has been accepted by ECCV 2026 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
 - [2026.07.02] We have released the training and inference code of DyRef, along with the corresponding training data, benchmark, and model weights. Feel free to use it! ⭐⭐⭐
 
 ## 📋 Todo List

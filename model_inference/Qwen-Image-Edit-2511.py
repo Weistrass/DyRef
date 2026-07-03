@@ -38,24 +38,24 @@ pipe.load_lora(pipe.dit, "/home/huangwenwang/projects_store/DyRef/checkpoints/qw
 # 权重2 
 #pipe.load_lora(pipe.dit, "/home/huangwenwang/projects_store/DyRef/checkpoints/qwen2511-gdpo-rank64-add2k5-6ref-csd-flat_sig0.65-gamma5/epoch-20.safetensors")
 
-# case1
-# prompt = "A woman wearing a wide-brimmed hat in reference image 1 stands beside a brown yak grazing on lush green grass in reference image 2. With visual aesthetics matching reference image 3. Against the backdrop shown in reference image 4."
-# images = [
-#     Image.open("data/test_exmaples/case1/a woman.png").convert("RGB"),
-#     Image.open("data/test_exmaples/case1/a brown yak grazing.png").convert("RGB"),
-#     Image.open("data/test_exmaples/case1/style_reference.png").convert("RGB"),
-#     Image.open("data/test_exmaples/case1/background.png").convert("RGB"),
-# ]
-
-# case2
-prompt = "A black motorcycle helmet in image 1 resting on rich soil beside a giant radish in image 2, with a tuna fish in image 3 leaping from the ocean. With visual aesthetics matching image 4. Set against the background from image 5."
+case1
+prompt = "A woman wearing a wide-brimmed hat in reference image 1 stands beside a brown yak grazing on lush green grass in reference image 2. With visual aesthetics matching reference image 3. Against the backdrop shown in reference image 4."
 images = [
-    Image.open("data/test_exmaples/case2/a black motorcycle helmet.png").convert("RGB"),
-    Image.open("data/test_exmaples/case2/a giant radish.png").convert("RGB"),
-    Image.open("data/test_exmaples/case2/a tuna fish.png").convert("RGB"),
-    Image.open("data/test_exmaples/case2/style_reference.png").convert("RGB"),
-    Image.open("data/test_exmaples/case2/background.png").convert("RGB"),    
+    Image.open("data/test_exmaples/case1/a woman.png").convert("RGB"),
+    Image.open("data/test_exmaples/case1/a brown yak grazing.png").convert("RGB"),
+    Image.open("data/test_exmaples/case1/style_reference.png").convert("RGB"),
+    Image.open("data/test_exmaples/case1/background.png").convert("RGB"),
 ]
+
+# # case2
+# prompt = "A black motorcycle helmet in image 1 resting on rich soil beside a giant radish in image 2, with a tuna fish in image 3 leaping from the ocean. With visual aesthetics matching image 4. Set against the background from image 5."
+# images = [
+#     Image.open("data/test_exmaples/case2/a black motorcycle helmet.png").convert("RGB"),
+#     Image.open("data/test_exmaples/case2/a giant radish.png").convert("RGB"),
+#     Image.open("data/test_exmaples/case2/a tuna fish.png").convert("RGB"),
+#     Image.open("data/test_exmaples/case2/style_reference.png").convert("RGB"),
+#     Image.open("data/test_exmaples/case2/background.png").convert("RGB"),    
+# ]
 
 # # case3
 # prompt = "A heavy-duty electric drill in reference image 1 resting on a sunlit hill where a giraffe stands tall in reference image 2, a neon-colored volleyball in reference image 3 nestled in the grass nearby, and a zippered pencil case in reference image 4 placed casually beside them. Stylistically resembling reference image 5. Set against the background from reference image 6."
@@ -79,18 +79,8 @@ images = [
 #     Image.open("data/test_exmaples/case4/pose_an_elderly_man.jpg").convert("RGB"),
 # ]
 
-# prompt = "A rugged man in a leather jacket in reference image 1 casually leaning against a vintage dresser, holding a minimalist leather wallet in reference image 2 in one hand while a pair of velvet high heels in reference image 3 rests nearby. A pillow with ruffled edges in reference image 4 sits atop a plush armchair, and a well-worn baseball glove with red stitching in reference image 5 lies on the wooden floor, soft golden-hour light streams through sheer curtains. The overall visual and artistic style of the generated image should resemble the style of reference image 6."
-# images = [
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/transfer_subjects/a man.png").convert("RGB"),
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/transfer_subjects/a minimalist leather wallet.png").convert("RGB"),
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/transfer_subjects/velvet high heels.png").convert("RGB"),
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/transfer_subjects/a pillow.png").convert("RGB"),
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/transfer_subjects/a baseball glove.png").convert("RGB"),
-#     Image.open("/data/wwh/datasets/data_4500/5_subjects/295/style/reference.png").convert("RGB"),
-# ]
-#edit_image = [Image.open("data/example_image_dataset/edit/ref1_1.png"), Image.open("data/example_image_dataset/edit/ref1_2.png"), Image.open("data/example_image_dataset/edit/ref1_3.png"),]
 
 # seed = 1
-image_gen = pipe(prompt, edit_image=images, seed=1, num_inference_steps=20, height=1024,
+image_gen = pipe(prompt, edit_image=images, seed=42, num_inference_steps=20, height=1024,
                 width=1024, edit_image_auto_resize=True, zero_cond_t=True, negative_prompt = "", cfg_scale = 4.0,)
-image_gen.save(fp="generate_results/case2_a800_seed42.png")
+image_gen.save(fp="generate_results/case1.png")

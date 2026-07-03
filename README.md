@@ -35,18 +35,18 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 ## 🔥 News
 
-- [2026.06.16] Our paper has been accepted by ECCV 2026. Congratulations to all collaborators!
-- [2026.07.02] We have released the training and inference code for DyRef, along with the corresponding training data, benchmark, and model weights.
+- [2026.06.16] Our paper has been accepted by ECCV 2026 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
+- [2026.07.02] We have released the training and inference code of DyRef, along with the corresponding training data, benchmark, and model weights. Feel free to use it! ⭐⭐⭐
 
 ## 📋 Todo List
 
-- ☑ Release our paper on arXiv.
-- ☑ Open-source the training code of DyRef for Qwen-Image-Edit-2511, and Flux2-klein-base.
-- ☑ Release the training data used in our work.
-- ☑ Open-source OmniRef-Bench, our proposed benchmark.
-- ☑ Release the model weights trained by our method.
-- ☐ Improve code efficiency and structure.
-- ☐ Release the project page
+- [x] Release our paper on arXiv.
+- [x] Open-source the training code of DyRef for Qwen-Image-Edit-2511, and Flux2-klein-base.
+- [x] Release the training data used in our work.
+- [x] Open-source OmniRef-Bench, our proposed benchmark.
+- [x] Release the model weights trained by our method.
+- [ ] Improve code efficiency and structure.
+- [ ] Release the project page
 
 ## ✨ Highlights
 

@@ -4,8 +4,8 @@
 
 Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, Mengfei Huang<sup>1</sup>, Yulin Li<sup>1</sup>, Gan Liu<sup>2</sup>, Jing Cai<sup>2</sup>, Yancheng He<sup>2</sup>, Zhuotao Tian<sup>1,3,†</sup>
 
-<sup>1</sup> Harbin Institute of Technology (Shenzhen),  
-<sup>2</sup> The Chinese University of Hong Kong (Shenzhen),  
+<sup>1</sup> Harbin Institute of Technology, Shenzhen,  
+<sup>2</sup> Independent Researcher,  
 <sup>3</sup> Shenzhen Loop Area Institute,  
 <sup>*</sup> Equal contribution · <sup>†</sup> Corresponding author
 

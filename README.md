@@ -32,6 +32,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 9. [Evaluation](#evaluation)
 10. [Acknowledgement](#acknowledgement)
 11. [Citation](#citation)
+12. [Star History](#star-history)
 
 ## 🔥News
 
@@ -228,3 +229,9 @@ If you find DyRef useful in your research, please consider citing it:
   year={2026}
 }
 ```
+
+<a id="star-history"></a>
+
+## ⭐️Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Weistrass/DyRef&type=Date)](https://star-history.com/#Weistrass/DyRef&Date)

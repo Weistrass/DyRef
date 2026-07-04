@@ -234,12 +234,4 @@ If you find DyRef useful in your research, please consider citing it:
 
 ## ⭐️Star History
 
-<a href="https://www.star-history.com/?type=date&repos=Weistrass%2FDyRef">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Weistrass/DyRef&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Weistrass/DyRef&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Weistrass/DyRef&type=date&legend=top-left" />
- </picture>
-</a>
-
-<!-- [![Star History Chart](https://api.star-history.com/svg?repos=Weistrass/DyRef&type=Date)](https://star-history.com/#Weistrass/DyRef&Date) -->
+[![Star History Chart](https://api.star-history.com/svg?repos=Weistrass/DyRef&type=Date)](https://star-history.com/#Weistrass/DyRef&Date)

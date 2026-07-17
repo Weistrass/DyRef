@@ -7,11 +7,15 @@ import time
 from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 from nltk.corpus import wordnet as wn  # noqa: F401  (kept for potential downstream use)
 import nltk
 from openai import OpenAI
 from tqdm import tqdm
-from venus_api_base.venus_openapi import PyVenusOpenApi
+
+from image_edit_api import add_image_edit_api_args, build_image_edit_backend, ImageEditBackend
+
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -116,8 +120,8 @@ def get_verification_from_vlm(client: OpenAI, base64_string: str, foreground_sub
     return response.choices[0].message.content
 
 
-def edit_subject(api: PyVenusOpenApi, header: dict, base64_string: str, prompts: list) -> str:
-    """Apply a sequence of edit prompts to the image via the Venus AIGC API."""
+def edit_subject(api: ImageEditBackend, header: dict, base64_string: str, prompts: list) -> str:
+    """Apply a sequence of edit prompts to the image via the configured image editing API."""
     for prompt in prompts:
         data = {
             "model_serving_id": 274162,
@@ -152,22 +156,16 @@ def edit_subject(api: PyVenusOpenApi, header: dict, base64_string: str, prompts:
                 "template_group": {},
             },
         }
-        ret = api.post(
-            "http://v2.open.venus.oa.com/venus_aigc/aidraw_task/submit",
-            header,
-            json.dumps(data),
-        )
+        ret = api.submit(header, json.dumps(data))
         picture_url = loop_task(api, ret["data"]["task_id"])
         base64_string = download_image_to_base64(picture_url)
     return base64_string
 
 
-def loop_task(api: PyVenusOpenApi, task_id: str, max_retries: int = 300) -> str:
+def loop_task(api: ImageEditBackend, task_id: str, max_retries: int = 300) -> str:
     """Poll the task status until success or failure (max *max_retries* polls)."""
     for _ in range(max_retries):
-        ret = api.get(
-            f"http://v2.open.venus.oa.com/venus_aigc/aidraw_task/query?task_ids={task_id}"
-        )
+        ret = api.query(task_id)
         task_status = ret["data"]["results"][0]["task_status"]
         if task_status in ("running", "waiting"):
             time.sleep(1)
@@ -238,7 +236,7 @@ def save_base64_image(b64str: str, out_path=None, default_ext: str = ".png") -> 
 # Entry point
 # ---------------------------------------------------------------------------
 
-def parse_args() -> argparse.Namespace:
+def parse_args() -> tuple[argparse.Namespace, argparse.ArgumentParser]:
     parser = argparse.ArgumentParser(description="Extract background by removing foreground subjects.")
     parser.add_argument("--root-dir", required=True, help="Root directory containing subject subdirectories.")
     parser.add_argument("--openai-api-key", default=os.environ.get("OPENAI_API_KEY"), help="OpenAI API key.")
@@ -247,16 +245,15 @@ def parse_args() -> argparse.Namespace:
         default=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         help="OpenAI-compatible base URL.",
     )
-    parser.add_argument("--venus-ak", default=os.environ.get("VENUS_AK"), help="Venus API access key.")
-    parser.add_argument("--venus-sk", default=os.environ.get("VENUS_SK"), help="Venus API secret key.")
-    return parser.parse_args()
+    add_image_edit_api_args(parser)
+    return parser.parse_args(), parser
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    args, parser = parse_args()
 
     client = OpenAI(api_key=args.openai_api_key, base_url=args.openai_base_url)
-    api = PyVenusOpenApi(args.venus_ak, args.venus_sk)
+    api = build_image_edit_backend(args, parser)
     header = {"Content-Type": "application/json"}
 
     root_dir_path = Path(args.root_dir)

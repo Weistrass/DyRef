@@ -312,6 +312,7 @@ Each cropped subject will be stored at:
 ```bash
 cd data_construct/gen_image
 
+# Fill IMAGE_EDIT_API_* in .env, or pass the matching --image-edit-api-* args.
 python subject_transfer.py \
   --root_dir /root/dir/to/generated/images \
   --num_subjects number_of_subjects
@@ -324,6 +325,7 @@ Each subject reference will be stored at:
 
 #### 5. Generate background references
 ```bash
+# Fill IMAGE_EDIT_API_* in .env, or pass the matching --image-edit-api-* args.
 python background_extract.py \
   --root_dir /dir/to/certain/number-of-subjects/target/images
 ```
@@ -431,4 +433,3 @@ python remove_marker.py \
   --input /path/to/input/jsonl/file \
   --output /path/to/output/jsonl/file
 ```
-

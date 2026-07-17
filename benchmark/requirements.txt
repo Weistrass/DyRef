@@ -22,9 +22,8 @@ sentence-transformers
 # Seedream / ARK image generation API (Volcengine, commercial service)
 volcengine-python-sdk
 
-# NOTE on data construction:
+# Optional image-editing backend:
 # `data_construct/gen_image/subject_transfer.py` and `background_extract.py`
-# depend on an INTERNAL proprietary API (`venus_api_base` / venus.oa.com AIGC
-# service) that is NOT publicly available. To reproduce subject-reference
-# generation with public tools, replace the PyVenusOpenApi calls with an
-# equivalent image-editing model/API of your choice.
+# call a configurable signed HTTP image-editing client. Provide
+# IMAGE_EDIT_API_CLIENT and the IMAGE_EDIT_API_* endpoint variables, and install
+# the matching client package separately if your backend requires one.

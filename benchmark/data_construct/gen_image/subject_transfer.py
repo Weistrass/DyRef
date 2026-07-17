@@ -11,7 +11,8 @@ import spacy
 from dotenv import load_dotenv
 from tqdm import tqdm
 from openai import OpenAI
-from venus_api_base.venus_openapi import PyVenusOpenApi
+
+from image_edit_api import add_image_edit_api_args, build_image_edit_backend, ImageEditBackend
 
 load_dotenv()
 
@@ -132,7 +133,7 @@ def get_edit_instructions_from_vlm(client: OpenAI, ori_image_path: str, extra_su
     return response.choices[0].message.content
 
 
-def edit_subject(api: PyVenusOpenApi, header: dict, base64_string: str, prompts: list) -> str:
+def edit_subject(api: ImageEditBackend, header: dict, base64_string: str, prompts: list) -> str:
     """Submit sequential image editing tasks and return the final base64 image string."""
     for prompt in prompts:
         data = {
@@ -167,22 +168,16 @@ def edit_subject(api: PyVenusOpenApi, header: dict, base64_string: str, prompts:
                 "template_group": {}
             }
         }
-        ret = api.post(
-            "http://v2.open.venus.oa.com/venus_aigc/aidraw_task/submit",
-            header,
-            json.dumps(data)
-        )
+        ret = api.submit(header, json.dumps(data))
         picture_url = loop_task(api, ret['data']['task_id'])
         base64_string = download_image_to_base64(picture_url)
     return base64_string
 
 
-def loop_task(api: PyVenusOpenApi, task_id: str, max_retries: int = 300) -> str:
+def loop_task(api: ImageEditBackend, task_id: str, max_retries: int = 300) -> str:
     """Poll the task status until success or failure, then return the result image URL."""
     for _ in range(max_retries):
-        ret = api.get(
-            f'http://v2.open.venus.oa.com/venus_aigc/aidraw_task/query?task_ids={task_id}'
-        )
+        ret = api.query(task_id)
         task_status = ret['data']['results'][0]['task_status']
         if task_status in ('running', 'waiting'):
             time.sleep(1)
@@ -254,13 +249,12 @@ def main():
     parser.add_argument("--num_subjects", type=int, default=5, help="Expected number of subjects per sample.")
     parser.add_argument("--api_key", type=str, required=True, help="OpenAI-compatible API key.")
     parser.add_argument("--base_url", type=str, required=True, help="OpenAI-compatible API base URL.")
-    parser.add_argument("--venus_ak", type=str, required=True, help="Venus API access key.")
-    parser.add_argument("--venus_sk", type=str, required=True, help="Venus API secret key.")
+    add_image_edit_api_args(parser)
     args = parser.parse_args()
 
     os.environ['OPENAI_API_KEY'] = args.api_key
     client = OpenAI(base_url=args.base_url)
-    api = PyVenusOpenApi(args.venus_ak, args.venus_sk)
+    api = build_image_edit_backend(args, parser)
     header = {'Content-Type': 'application/json'}
 
     root_dir_path = Path(args.root_dir)

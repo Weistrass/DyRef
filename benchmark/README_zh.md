@@ -308,6 +308,7 @@ python crop_subjects.py \
 ```bash
 cd data_construct/gen_image
 
+# 在 .env 中填写 IMAGE_EDIT_API_*，或传入对应的 --image-edit-api-* 参数。
 python subject_transfer.py \
   --root_dir /root/dir/to/generated/images \
   --num_subjects number_of_subjects
@@ -320,6 +321,7 @@ python subject_transfer.py \
 
 #### 5. 生成背景参考图像
 ```bash
+# 在 .env 中填写 IMAGE_EDIT_API_*，或传入对应的 --image-edit-api-* 参数。
 python background_extract.py \
   --root_dir /dir/to/certain/number-of-subjects/target/images
 ```

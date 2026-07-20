@@ -19,6 +19,14 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 </div>
 
+## 🎬 Demo Video
+
+<p align="center">
+  <video src="assets/demo.mp4" controls width="100%">
+    Your browser does not support the video tag.
+  </video>
+</p>
+
 ## 🔖 Table of Contents
 
 1. [News](#news)

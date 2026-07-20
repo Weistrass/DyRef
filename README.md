@@ -21,11 +21,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 
 ## 🎬 Demo Video
 
-<p align="center">
-  <video src="assets/demo.mp4" controls width="100%">
-    Your browser does not support the video tag.
-  </video>
-</p>
+https://github.com/user-attachments/assets/49230304-5e7a-4af1-9f29-e695be35668d
 
 ## 🔖 Table of Contents
 

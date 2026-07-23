@@ -35,7 +35,8 @@ https://github.com/user-attachments/assets/cffc168a-a785-47be-baf2-4ef504ae9f22
 8. [Quickstart](#quickstart)
 9. [Evaluation](#evaluation)
 10. [Acknowledgement](#acknowledgement)
-11. [Citation](#citation)
+11. [Contact](#contact)
+12. [Citation](#citation)
 <!-- 12. [Star History](#star-history) -->
 
 ## 🔥News
@@ -220,6 +221,10 @@ DyRef is built on several excellent open-source projects:
 - [Grounded-SAM-2](https://github.com/IDEA-Research/Grounded-SAM-2) for subject and background evaluation
 - [CSD](https://github.com/learn2phoenix/CSD) for style consistency evaluation
 - [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose) for pose evaluation
+
+## 📧Contact
+
+If you have any questions, suggestions, or ideas, please feel free to contact us at [liamwwhuang@163.com](mailto:liamwwhuang@163.com).
 
 ## 📝Citation
 

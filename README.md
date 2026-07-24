@@ -41,9 +41,9 @@ https://github.com/user-attachments/assets/cffc168a-a785-47be-baf2-4ef504ae9f22
 
 ## 🔥News
 
-- [2026.06.18] Our paper has been accepted by ECCV 2026 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
+- [2026.06.18] Our paper has been accepted by **ECCV 2026** 🎉🎉🎉. Congratulations to all collaborators! 🎊🎊🎊
 - [2026.07.02] We have released the training and inference code of DyRef, along with the corresponding training data, benchmark, and model weights. Feel free to use it! ⭐⭐⭐
-- [2026.07.24] Our paper has been selected for an Oral presentation at ECCV 2026 🎤🎉. We are grateful to the program committee and reviewers, and excited to present DyRef to the community!
+- [2026.07.24]  🍾Our paper has been selected as an **Oral Presentation** at **ECCV 2026**. We are grateful to the program committee and reviewers, and excited to present DyRef to the community!
 
 ## 📋Todo List
 

@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/cffc168a-a785-47be-baf2-4ef504ae9f22
 ## ✨Highlights
 
 <p align="center">
-  <img src="assets/figure1.png" alt="DyRef Performance" />
+  <img src="assets/performance-dyref.jpg" alt="DyRef Performance" />
 </p>
 
 ![DyRef Quantitative](assets/radar_plot.png)

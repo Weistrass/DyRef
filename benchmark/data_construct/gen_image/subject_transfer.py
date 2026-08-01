@@ -133,6 +133,8 @@ def get_edit_instructions_from_vlm(client: OpenAI, ori_image_path: str, extra_su
     return response.choices[0].message.content
 
 
+# NOTE: Replace the hard-coded workflow/model parameters below with your own
+# self-deployed Qwen-Image-Edit-2511 model before running this script.
 def edit_subject(api: ImageEditBackend, header: dict, base64_string: str, prompts: list) -> str:
     """Submit sequential image editing tasks and return the final base64 image string."""
     for prompt in prompts:

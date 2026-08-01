@@ -120,6 +120,8 @@ def get_verification_from_vlm(client: OpenAI, base64_string: str, foreground_sub
     return response.choices[0].message.content
 
 
+# NOTE: Replace the hard-coded workflow/model parameters below with your own
+# self-deployed Qwen-Image-Edit-2511 model before running this script.
 def edit_subject(api: ImageEditBackend, header: dict, base64_string: str, prompts: list) -> str:
     """Apply a sequence of edit prompts to the image via the configured image editing API."""
     for prompt in prompts:

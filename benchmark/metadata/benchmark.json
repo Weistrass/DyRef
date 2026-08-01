@@ -2056,7 +2056,7 @@
         "edit_image": [
             "subject_pose/3/1/transfer_subjects/a man.png",
             "subject_pose/3/1/transfer_subjects/a vintage crosswalk sign.png",
-            "subject_pose/3/1/pose/reference/a_man.jpeg"
+            "subject_pose/3/1/pose/skeleton/a_man.jpg"
         ],
         "index": 161,
         "category": "subject_pose"
@@ -2067,7 +2067,7 @@
         "edit_image": [
             "subject_pose/3/2/transfer_subjects/a jellyfish drifting.png",
             "subject_pose/3/2/transfer_subjects/a woman.png",
-            "subject_pose/3/2/pose/reference/a_woman.jpeg"
+            "subject_pose/3/2/pose/skeleton/a_woman.jpg"
         ],
         "index": 162,
         "category": "subject_pose"
@@ -2089,7 +2089,7 @@
         "edit_image": [
             "subject_pose/3/4/transfer_subjects/a bald man.png",
             "subject_pose/3/4/transfer_subjects/scooter.png",
-            "subject_pose/3/4/pose/reference/a_bald_man.jpeg"
+            "subject_pose/3/4/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 164,
         "category": "subject_pose"
@@ -2100,7 +2100,7 @@
         "edit_image": [
             "subject_pose/3/5/transfer_subjects/a woman.png",
             "subject_pose/3/5/transfer_subjects/a tent.png",
-            "subject_pose/3/5/pose/reference/a_woman.jpeg"
+            "subject_pose/3/5/pose/skeleton/a_woman.jpg"
         ],
         "index": 165,
         "category": "subject_pose"
@@ -2111,7 +2111,7 @@
         "edit_image": [
             "subject_pose/3/6/transfer_subjects/a bald man.png",
             "subject_pose/3/6/transfer_subjects/a woman.png",
-            "subject_pose/3/6/pose/reference/a_bald_man.jpeg"
+            "subject_pose/3/6/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 166,
         "category": "subject_pose"
@@ -2156,7 +2156,7 @@
             "subject_pose/4/0/transfer_subjects/a pool table.png",
             "subject_pose/4/0/transfer_subjects/a metallic pencil case.png",
             "subject_pose/4/0/transfer_subjects/a man.png",
-            "subject_pose/4/0/pose/reference/a_man.png"
+            "subject_pose/4/0/pose/skeleton/a_man.jpg"
         ],
         "index": 170,
         "category": "subject_pose"
@@ -2168,7 +2168,7 @@
             "subject_pose/4/1/transfer_subjects/a chocolate easter egg.png",
             "subject_pose/4/1/transfer_subjects/a woman.png",
             "subject_pose/4/1/transfer_subjects/a border collie.png",
-            "subject_pose/4/1/pose/reference/a_woman.png"
+            "subject_pose/4/1/pose/skeleton/a_woman.jpg"
         ],
         "index": 171,
         "category": "subject_pose"
@@ -2180,7 +2180,7 @@
             "subject_pose/4/2/transfer_subjects/a man.png",
             "subject_pose/4/2/transfer_subjects/a teenager.png",
             "subject_pose/4/2/transfer_subjects/a portable camping gas stove.png",
-            "subject_pose/4/2/pose/reference/a_man.png"
+            "subject_pose/4/2/pose/skeleton/a_man.jpg"
         ],
         "index": 172,
         "category": "subject_pose"
@@ -2204,7 +2204,7 @@
             "subject_pose/4/4/transfer_subjects/a pencil case.png",
             "subject_pose/4/4/transfer_subjects/memory foam slippers.png",
             "subject_pose/4/4/transfer_subjects/a young girl.png",
-            "subject_pose/4/4/pose/reference/a_young_girl.png"
+            "subject_pose/4/4/pose/skeleton/a_young_girl.jpg"
         ],
         "index": 174,
         "category": "subject_pose"
@@ -2216,7 +2216,7 @@
             "subject_pose/4/5/transfer_subjects/a boy.png",
             "subject_pose/4/5/transfer_subjects/a radiator.png",
             "subject_pose/4/5/transfer_subjects/a black lexus lc 500.png",
-            "subject_pose/4/5/pose/reference/a_boy.png"
+            "subject_pose/4/5/pose/skeleton/a_boy.jpg"
         ],
         "index": 175,
         "category": "subject_pose"
@@ -2252,7 +2252,7 @@
             "subject_pose/4/8/transfer_subjects/a girl.png",
             "subject_pose/4/8/transfer_subjects/slippers.png",
             "subject_pose/4/8/transfer_subjects/a rusty abandoned train.png",
-            "subject_pose/4/8/pose/reference/a_girl.png"
+            "subject_pose/4/8/pose/skeleton/a_girl.jpg"
         ],
         "index": 178,
         "category": "subject_pose"
@@ -2276,7 +2276,7 @@
             "subject_pose/5/0/transfer_subjects/a cucumber.png",
             "subject_pose/5/0/transfer_subjects/a man.png",
             "subject_pose/5/0/transfer_subjects/a girl.png",
-            "subject_pose/5/0/pose/reference/a_girl.jpeg",
+            "subject_pose/5/0/pose/skeleton/a_girl.jpg",
             "subject_pose/5/0/transfer_subjects/a frisbee.png"
         ],
         "index": 180,
@@ -2290,7 +2290,7 @@
             "subject_pose/5/1/transfer_subjects/a penguin.png",
             "subject_pose/5/1/transfer_subjects/a hurdle.png",
             "subject_pose/5/1/transfer_subjects/bright red hardside spinner.png",
-            "subject_pose/5/1/pose/reference/a_young_girl.png"
+            "subject_pose/5/1/pose/skeleton/a_young_girl.jpg"
         ],
         "index": 181,
         "category": "subject_pose"
@@ -2303,7 +2303,7 @@
             "subject_pose/5/2/transfer_subjects/a personalized baseball bat.png",
             "subject_pose/5/2/transfer_subjects/a vintage baseball glove.png",
             "subject_pose/5/2/transfer_subjects/a traditional chinese yixing teapot.png",
-            "subject_pose/5/2/pose/reference/a_man.png"
+            "subject_pose/5/2/pose/skeleton/a_man.jpg"
         ],
         "index": 182,
         "category": "subject_pose"
@@ -2316,7 +2316,7 @@
             "subject_pose/5/3/transfer_subjects/a bald man.png",
             "subject_pose/5/3/transfer_subjects/a bamboo rice bowl.png",
             "subject_pose/5/3/transfer_subjects/a black suv.png",
-            "subject_pose/5/3/pose/reference/a_bald_man.png"
+            "subject_pose/5/3/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 183,
         "category": "subject_pose"
@@ -2408,7 +2408,7 @@
             "subject_pose/6/0/transfer_subjects/a skiboard.png",
             "subject_pose/6/0/transfer_subjects/a man.png",
             "subject_pose/6/0/transfer_subjects/a military-grade hoverboard.png",
-            "subject_pose/6/0/pose/reference/a_man.png"
+            "subject_pose/6/0/pose/skeleton/a_man.jpg"
         ],
         "index": 190,
         "category": "subject_pose"
@@ -2422,7 +2422,7 @@
             "subject_pose/6/1/transfer_subjects/a woman.png",
             "subject_pose/6/1/transfer_subjects/a damascus steel knife.png",
             "subject_pose/6/1/transfer_subjects/a black baseball bat.png",
-            "subject_pose/6/1/pose/reference/an_elderly_man.png"
+            "subject_pose/6/1/pose/skeleton/an_elderly_man.jpg"
         ],
         "index": 191,
         "category": "subject_pose"
@@ -2435,7 +2435,7 @@
             "subject_pose/6/2/transfer_subjects/a girl.png",
             "subject_pose/6/2/transfer_subjects/a wheelchair.png",
             "subject_pose/6/2/transfer_subjects/a slide.png",
-            "subject_pose/6/2/pose/reference/a_girl.png",
+            "subject_pose/6/2/pose/skeleton/a_girl.jpg",
             "subject_pose/6/2/transfer_subjects/a volleyball.png"
         ],
         "index": 192,
@@ -2478,7 +2478,7 @@
             "subject_pose/6/5/transfer_subjects/an elderly man.png",
             "subject_pose/6/5/transfer_subjects/a red-handled shovel.png",
             "subject_pose/6/5/transfer_subjects/a stop sign.png",
-            "subject_pose/6/5/pose/reference/an_elderly_man.png"
+            "subject_pose/6/5/pose/skeleton/an_elderly_man.jpg"
         ],
         "index": 195,
         "category": "subject_pose"
@@ -2492,7 +2492,7 @@
             "subject_pose/6/6/transfer_subjects/a boy.png",
             "subject_pose/6/6/transfer_subjects/a deflated balloon.png",
             "subject_pose/6/6/transfer_subjects/a fan-shaped paint brush.png",
-            "subject_pose/6/6/pose/reference/a_woman.png"
+            "subject_pose/6/6/pose/skeleton/a_woman.jpg"
         ],
         "index": 196,
         "category": "subject_pose"
@@ -2557,7 +2557,7 @@
         "edit_image": [
             "subject_pose_bg/4/1/transfer_subjects/a tall man.png",
             "subject_pose_bg/4/1/transfer_subjects/an elderly woman.png",
-            "subject_pose_bg/4/1/pose/reference/a_tall_man.jpeg",
+            "subject_pose_bg/4/1/pose/skeleton/a_tall_man.jpg",
             "subject_pose_bg/4/1/background/background.png"
         ],
         "index": 201,
@@ -2593,7 +2593,7 @@
         "edit_image": [
             "subject_pose_bg/4/4/transfer_subjects/a young man.png",
             "subject_pose_bg/4/4/transfer_subjects/a woman.png",
-            "subject_pose_bg/4/4/pose/reference/a_young_man.png",
+            "subject_pose_bg/4/4/pose/skeleton/a_young_man.jpg",
             "subject_pose_bg/4/4/background/background.png"
         ],
         "index": 204,
@@ -2618,7 +2618,7 @@
             "subject_pose_bg/4/6/transfer_subjects/an elderly scholar.png",
             "subject_pose_bg/4/6/transfer_subjects/a young boy.png",
             "subject_pose_bg/4/6/background/background.png",
-            "subject_pose_bg/4/6/pose/reference/an_elderly_scholar.png"
+            "subject_pose_bg/4/6/pose/skeleton/an_elderly_scholar.jpg"
         ],
         "index": 206,
         "category": "subject_pose_bg"
@@ -2630,7 +2630,7 @@
             "subject_pose_bg/4/7/transfer_subjects/a bald man.png",
             "subject_pose_bg/4/7/transfer_subjects/a young woman.png",
             "subject_pose_bg/4/7/background/background.png",
-            "subject_pose_bg/4/7/pose/reference/a_bald_man.png"
+            "subject_pose_bg/4/7/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 207,
         "category": "subject_pose_bg"
@@ -2642,7 +2642,7 @@
             "subject_pose_bg/4/8/transfer_subjects/a young boy.png",
             "subject_pose_bg/4/8/transfer_subjects/a man.png",
             "subject_pose_bg/4/8/background/background.png",
-            "subject_pose_bg/4/8/pose/reference/a_young_boy.png"
+            "subject_pose_bg/4/8/pose/skeleton/a_young_boy.jpg"
         ],
         "index": 208,
         "category": "subject_pose_bg"
@@ -2666,7 +2666,7 @@
             "subject_pose_bg/5/0/transfer_subjects/a tall man.png",
             "subject_pose_bg/5/0/transfer_subjects/a young boy.png",
             "subject_pose_bg/5/0/transfer_subjects/an orange basketball.png",
-            "subject_pose_bg/5/0/pose/reference/a_tall_man.png",
+            "subject_pose_bg/5/0/pose/skeleton/a_tall_man.jpg",
             "subject_pose_bg/5/0/background/background.png"
         ],
         "index": 210,
@@ -2693,7 +2693,7 @@
             "subject_pose_bg/5/2/transfer_subjects/a man.png",
             "subject_pose_bg/5/2/transfer_subjects/a tennis racket.png",
             "subject_pose_bg/5/2/background/background.png",
-            "subject_pose_bg/5/2/pose/reference/a_man.png"
+            "subject_pose_bg/5/2/pose/skeleton/a_man.jpg"
         ],
         "index": 212,
         "category": "subject_pose_bg"
@@ -2706,7 +2706,7 @@
             "subject_pose_bg/5/3/transfer_subjects/a boy.png",
             "subject_pose_bg/5/3/transfer_subjects/an elderly man.png",
             "subject_pose_bg/5/3/background/background.png",
-            "subject_pose_bg/5/3/pose/reference/an_elderly_man.png"
+            "subject_pose_bg/5/3/pose/skeleton/an_elderly_man.jpg"
         ],
         "index": 213,
         "category": "subject_pose_bg"
@@ -2719,7 +2719,7 @@
             "subject_pose_bg/5/4/transfer_subjects/a teenage girl.png",
             "subject_pose_bg/5/4/transfer_subjects/a boy.png",
             "subject_pose_bg/5/4/background/background.png",
-            "subject_pose_bg/5/4/pose/reference/a_boy.png"
+            "subject_pose_bg/5/4/pose/skeleton/a_boy.jpg"
         ],
         "index": 214,
         "category": "subject_pose_bg"
@@ -2732,7 +2732,7 @@
             "subject_pose_bg/5/5/transfer_subjects/a boy.png",
             "subject_pose_bg/5/5/transfer_subjects/a man.png",
             "subject_pose_bg/5/5/background/background.png",
-            "subject_pose_bg/5/5/pose/reference/a_girl.png"
+            "subject_pose_bg/5/5/pose/skeleton/a_girl.jpg"
         ],
         "index": 215,
         "category": "subject_pose_bg"
@@ -2798,7 +2798,7 @@
             "subject_pose_bg/6/0/transfer_subjects/a man.png",
             "subject_pose_bg/6/0/transfer_subjects/a yellow frisbee.png",
             "subject_pose_bg/6/0/background/background.png",
-            "subject_pose_bg/6/0/pose/reference/a_woman.png"
+            "subject_pose_bg/6/0/pose/skeleton/a_woman.jpg"
         ],
         "index": 220,
         "category": "subject_pose_bg"
@@ -2812,7 +2812,7 @@
             "subject_pose_bg/6/1/transfer_subjects/a woman.png",
             "subject_pose_bg/6/1/transfer_subjects/an orange basketball.png",
             "subject_pose_bg/6/1/background/background.png",
-            "subject_pose_bg/6/1/pose/reference/a_boy.png"
+            "subject_pose_bg/6/1/pose/skeleton/a_boy.jpg"
         ],
         "index": 221,
         "category": "subject_pose_bg"
@@ -2826,7 +2826,7 @@
             "subject_pose_bg/6/2/transfer_subjects/a woman.png",
             "subject_pose_bg/6/2/transfer_subjects/a black-and-white soccer ball.png",
             "subject_pose_bg/6/2/background/background.png",
-            "subject_pose_bg/6/2/pose/reference/a_boy_a_man.png"
+            "subject_pose_bg/6/2/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 222,
         "category": "subject_pose_bg"
@@ -2839,7 +2839,7 @@
             "subject_pose_bg/6/3/transfer_subjects/a woman.png",
             "subject_pose_bg/6/3/transfer_subjects/a boy.png",
             "subject_pose_bg/6/3/transfer_subjects/a blue surfboard.png",
-            "subject_pose_bg/6/3/pose/reference/a_man.png",
+            "subject_pose_bg/6/3/pose/skeleton/a_man.jpg",
             "subject_pose_bg/6/3/background/background.png"
         ],
         "index": 223,
@@ -2854,7 +2854,7 @@
             "subject_pose_bg/6/4/transfer_subjects/a woman.png",
             "subject_pose_bg/6/4/transfer_subjects/a blue frisbee.png",
             "subject_pose_bg/6/4/background/background.png",
-            "subject_pose_bg/6/4/pose/reference/a_boy_a_man.png"
+            "subject_pose_bg/6/4/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 224,
         "category": "subject_pose_bg"
@@ -2948,7 +2948,7 @@
             "subject_pose_lighting/4/1/transfer_subjects/a jellyfish drifting.png",
             "subject_pose_lighting/4/1/transfer_subjects/a woman.png",
             "subject_pose_lighting/4/1/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/4/1/pose/reference/a_woman.jpeg"
+            "subject_pose_lighting/4/1/pose/skeleton/a_woman.jpg"
         ],
         "index": 231,
         "category": "subject_pose_lighting"
@@ -2960,7 +2960,7 @@
             "subject_pose_lighting/4/2/transfer_subjects/a bald man.png",
             "subject_pose_lighting/4/2/transfer_subjects/scooter.png",
             "subject_pose_lighting/4/2/lighting/lighting_reference.png",
-            "subject_pose_lighting/4/2/pose/reference/a_bald_man.jpeg"
+            "subject_pose_lighting/4/2/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 232,
         "category": "subject_pose_lighting"
@@ -2972,7 +2972,7 @@
             "subject_pose_lighting/4/3/transfer_subjects/a woman.png",
             "subject_pose_lighting/4/3/transfer_subjects/a tent.png",
             "subject_pose_lighting/4/3/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/4/3/pose/reference/a_woman.jpeg"
+            "subject_pose_lighting/4/3/pose/skeleton/a_woman.jpg"
         ],
         "index": 233,
         "category": "subject_pose_lighting"
@@ -2984,7 +2984,7 @@
             "subject_pose_lighting/4/4/transfer_subjects/a bald man.png",
             "subject_pose_lighting/4/4/transfer_subjects/a woman.png",
             "subject_pose_lighting/4/4/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/4/4/pose/reference/a_bald_man.jpeg"
+            "subject_pose_lighting/4/4/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 234,
         "category": "subject_pose_lighting"
@@ -3008,7 +3008,7 @@
             "subject_pose_lighting/4/6/transfer_subjects/an elderly scholar.png",
             "subject_pose_lighting/4/6/transfer_subjects/a young boy.png",
             "subject_pose_lighting/4/6/lighting/lighting_reference.png",
-            "subject_pose_lighting/4/6/pose/reference/an_elderly_scholar.png"
+            "subject_pose_lighting/4/6/pose/skeleton/an_elderly_scholar.jpg"
         ],
         "index": 236,
         "category": "subject_pose_lighting"
@@ -3019,7 +3019,7 @@
         "edit_image": [
             "subject_pose_lighting/4/7/transfer_subjects/a bald man.png",
             "subject_pose_lighting/4/7/transfer_subjects/a young woman.png",
-            "subject_pose_lighting/4/7/pose/reference/a_bald_man.png",
+            "subject_pose_lighting/4/7/pose/skeleton/a_bald_man.jpg",
             "subject_pose_lighting/4/7/lighting/lighting_reference.png"
         ],
         "index": 237,
@@ -3032,7 +3032,7 @@
             "subject_pose_lighting/4/8/transfer_subjects/a young boy.png",
             "subject_pose_lighting/4/8/transfer_subjects/a man.png",
             "subject_pose_lighting/4/8/lighting/lighting_reference.png",
-            "subject_pose_lighting/4/8/pose/reference/a_young_boy.png"
+            "subject_pose_lighting/4/8/pose/skeleton/a_young_boy.jpg"
         ],
         "index": 238,
         "category": "subject_pose_lighting"
@@ -3056,7 +3056,7 @@
             "subject_pose_lighting/5/0/transfer_subjects/a chocolate easter egg.png",
             "subject_pose_lighting/5/0/transfer_subjects/a woman.png",
             "subject_pose_lighting/5/0/transfer_subjects/a border collie.png",
-            "subject_pose_lighting/5/0/pose/reference/a_woman.png",
+            "subject_pose_lighting/5/0/pose/skeleton/a_woman.jpg",
             "subject_pose_lighting/5/0/lighting/lighting_reference.jpeg"
         ],
         "index": 240,
@@ -3070,7 +3070,7 @@
             "subject_pose_lighting/5/1/transfer_subjects/memory foam slippers.png",
             "subject_pose_lighting/5/1/transfer_subjects/a young girl.png",
             "subject_pose_lighting/5/1/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/5/1/pose/reference/a_young_girl.png"
+            "subject_pose_lighting/5/1/pose/skeleton/a_young_girl.jpg"
         ],
         "index": 241,
         "category": "subject_pose_lighting"
@@ -3083,7 +3083,7 @@
             "subject_pose_lighting/5/2/transfer_subjects/a radiator.png",
             "subject_pose_lighting/5/2/transfer_subjects/a black lexus lc 500.png",
             "subject_pose_lighting/5/2/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/5/2/pose/reference/a_boy.png"
+            "subject_pose_lighting/5/2/pose/skeleton/a_boy.jpg"
         ],
         "index": 242,
         "category": "subject_pose_lighting"
@@ -3096,7 +3096,7 @@
             "subject_pose_lighting/5/3/transfer_subjects/a young boy.png",
             "subject_pose_lighting/5/3/transfer_subjects/an orange basketball.png",
             "subject_pose_lighting/5/3/lighting/lighting_reference.png",
-            "subject_pose_lighting/5/3/pose/reference/a_tall_man.png"
+            "subject_pose_lighting/5/3/pose/skeleton/a_tall_man.jpg"
         ],
         "index": 243,
         "category": "subject_pose_lighting"
@@ -3109,7 +3109,7 @@
             "subject_pose_lighting/5/4/transfer_subjects/a man.png",
             "subject_pose_lighting/5/4/transfer_subjects/a tennis racket.png",
             "subject_pose_lighting/5/4/lighting/lighting_reference.png",
-            "subject_pose_lighting/5/4/pose/reference/a_man.png"
+            "subject_pose_lighting/5/4/pose/skeleton/a_man.jpg"
         ],
         "index": 244,
         "category": "subject_pose_lighting"
@@ -3121,7 +3121,7 @@
             "subject_pose_lighting/5/5/transfer_subjects/a young woman.png",
             "subject_pose_lighting/5/5/transfer_subjects/a boy.png",
             "subject_pose_lighting/5/5/transfer_subjects/an elderly man.png",
-            "subject_pose_lighting/5/5/pose/reference/an_elderly_man.png",
+            "subject_pose_lighting/5/5/pose/skeleton/an_elderly_man.jpg",
             "subject_pose_lighting/5/5/lighting/lighting_reference.png"
         ],
         "index": 245,
@@ -3135,7 +3135,7 @@
             "subject_pose_lighting/5/6/transfer_subjects/a boy.png",
             "subject_pose_lighting/5/6/transfer_subjects/a man.png",
             "subject_pose_lighting/5/6/lighting/lighting_reference.png",
-            "subject_pose_lighting/5/6/pose/reference/a_girl.png"
+            "subject_pose_lighting/5/6/pose/skeleton/a_girl.jpg"
         ],
         "index": 246,
         "category": "subject_pose_lighting"
@@ -3188,7 +3188,7 @@
             "subject_pose_lighting/6/0/transfer_subjects/a personalized baseball bat.png",
             "subject_pose_lighting/6/0/transfer_subjects/a vintage baseball glove.png",
             "subject_pose_lighting/6/0/lighting/lighting_reference.jpeg",
-            "subject_pose_lighting/6/0/pose/reference/a_man.png"
+            "subject_pose_lighting/6/0/pose/skeleton/a_man.jpg"
         ],
         "index": 250,
         "category": "subject_pose_lighting"
@@ -3230,7 +3230,7 @@
             "subject_pose_lighting/6/3/transfer_subjects/a man.png",
             "subject_pose_lighting/6/3/transfer_subjects/a yellow frisbee.png",
             "subject_pose_lighting/6/3/lighting/lighting_reference.png",
-            "subject_pose_lighting/6/3/pose/reference/a_woman.png"
+            "subject_pose_lighting/6/3/pose/skeleton/a_woman.jpg"
         ],
         "index": 253,
         "category": "subject_pose_lighting"
@@ -3244,7 +3244,7 @@
             "subject_pose_lighting/6/4/transfer_subjects/a woman.png",
             "subject_pose_lighting/6/4/transfer_subjects/an orange basketball.png",
             "subject_pose_lighting/6/4/lighting/lighting_reference.png",
-            "subject_pose_lighting/6/4/pose/reference/a_boy.png"
+            "subject_pose_lighting/6/4/pose/skeleton/a_boy.jpg"
         ],
         "index": 254,
         "category": "subject_pose_lighting"
@@ -3272,7 +3272,7 @@
             "subject_pose_lighting/6/6/transfer_subjects/a woman.png",
             "subject_pose_lighting/6/6/transfer_subjects/a blue frisbee.png",
             "subject_pose_lighting/6/6/lighting/lighting_reference.png",
-            "subject_pose_lighting/6/6/pose/reference/a_boy_a_man.png"
+            "subject_pose_lighting/6/6/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 256,
         "category": "subject_pose_lighting"
@@ -3338,7 +3338,7 @@
             "subject_pose_style/4/1/transfer_subjects/a tall man.png",
             "subject_pose_style/4/1/transfer_subjects/an elderly woman.png",
             "subject_pose_style/4/1/style/reference.png",
-            "subject_pose_style/4/1/pose/reference/a_tall_man.jpeg"
+            "subject_pose_style/4/1/pose/skeleton/a_tall_man.jpg"
         ],
         "index": 261,
         "category": "subject_pose_style"
@@ -3374,7 +3374,7 @@
             "subject_pose_style/4/4/transfer_subjects/a young man.png",
             "subject_pose_style/4/4/transfer_subjects/a woman.png",
             "subject_pose_style/4/4/style/reference.png",
-            "subject_pose_style/4/4/pose/reference/a_young_man.png"
+            "subject_pose_style/4/4/pose/skeleton/a_young_man.jpg"
         ],
         "index": 264,
         "category": "subject_pose_style"
@@ -3398,7 +3398,7 @@
             "subject_pose_style/4/6/transfer_subjects/an elderly scholar.png",
             "subject_pose_style/4/6/transfer_subjects/a young boy.png",
             "subject_pose_style/4/6/style/reference.png",
-            "subject_pose_style/4/6/pose/reference/an_elderly_scholar.png"
+            "subject_pose_style/4/6/pose/skeleton/an_elderly_scholar.jpg"
         ],
         "index": 266,
         "category": "subject_pose_style"
@@ -3410,7 +3410,7 @@
             "subject_pose_style/4/7/transfer_subjects/a bald man.png",
             "subject_pose_style/4/7/transfer_subjects/a young woman.png",
             "subject_pose_style/4/7/style/reference.png",
-            "subject_pose_style/4/7/pose/reference/a_bald_man.png"
+            "subject_pose_style/4/7/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 267,
         "category": "subject_pose_style"
@@ -3422,7 +3422,7 @@
             "subject_pose_style/4/8/transfer_subjects/a young boy.png",
             "subject_pose_style/4/8/transfer_subjects/a man.png",
             "subject_pose_style/4/8/style/reference.png",
-            "subject_pose_style/4/8/pose/reference/a_young_boy.png"
+            "subject_pose_style/4/8/pose/skeleton/a_young_boy.jpg"
         ],
         "index": 268,
         "category": "subject_pose_style"
@@ -3447,7 +3447,7 @@
             "subject_pose_style/5/0/transfer_subjects/a young boy.png",
             "subject_pose_style/5/0/transfer_subjects/an orange basketball.png",
             "subject_pose_style/5/0/style/reference.png",
-            "subject_pose_style/5/0/pose/reference/a_tall_man.png"
+            "subject_pose_style/5/0/pose/skeleton/a_tall_man.jpg"
         ],
         "index": 270,
         "category": "subject_pose_style"
@@ -3473,7 +3473,7 @@
             "subject_pose_style/5/2/transfer_subjects/a man.png",
             "subject_pose_style/5/2/transfer_subjects/a tennis racket.png",
             "subject_pose_style/5/2/style/reference.png",
-            "subject_pose_style/5/2/pose/reference/a_man.png"
+            "subject_pose_style/5/2/pose/skeleton/a_man.jpg"
         ],
         "index": 272,
         "category": "subject_pose_style"
@@ -3486,7 +3486,7 @@
             "subject_pose_style/5/3/transfer_subjects/a boy.png",
             "subject_pose_style/5/3/transfer_subjects/an elderly man.png",
             "subject_pose_style/5/3/style/reference.png",
-            "subject_pose_style/5/3/pose/reference/an_elderly_man.png"
+            "subject_pose_style/5/3/pose/skeleton/an_elderly_man.jpg"
         ],
         "index": 273,
         "category": "subject_pose_style"
@@ -3499,7 +3499,7 @@
             "subject_pose_style/5/4/transfer_subjects/a teenage girl.png",
             "subject_pose_style/5/4/transfer_subjects/a boy.png",
             "subject_pose_style/5/4/style/reference.png",
-            "subject_pose_style/5/4/pose/reference/a_boy.png"
+            "subject_pose_style/5/4/pose/skeleton/a_boy.jpg"
         ],
         "index": 274,
         "category": "subject_pose_style"
@@ -3512,7 +3512,7 @@
             "subject_pose_style/5/5/transfer_subjects/a boy.png",
             "subject_pose_style/5/5/transfer_subjects/a man.png",
             "subject_pose_style/5/5/style/reference.png",
-            "subject_pose_style/5/5/pose/reference/a_girl.png"
+            "subject_pose_style/5/5/pose/skeleton/a_girl.jpg"
         ],
         "index": 275,
         "category": "subject_pose_style"
@@ -3578,7 +3578,7 @@
             "subject_pose_style/6/0/transfer_subjects/a man.png",
             "subject_pose_style/6/0/transfer_subjects/a yellow frisbee.png",
             "subject_pose_style/6/0/style/reference.png",
-            "subject_pose_style/6/0/pose/reference/a_woman.png"
+            "subject_pose_style/6/0/pose/skeleton/a_woman.jpg"
         ],
         "index": 280,
         "category": "subject_pose_style"
@@ -3592,7 +3592,7 @@
             "subject_pose_style/6/1/transfer_subjects/a woman.png",
             "subject_pose_style/6/1/transfer_subjects/an orange basketball.png",
             "subject_pose_style/6/1/style/reference.png",
-            "subject_pose_style/6/1/pose/reference/a_boy.png"
+            "subject_pose_style/6/1/pose/skeleton/a_boy.jpg"
         ],
         "index": 281,
         "category": "subject_pose_style"
@@ -3606,7 +3606,7 @@
             "subject_pose_style/6/2/transfer_subjects/a woman.png",
             "subject_pose_style/6/2/transfer_subjects/a black-and-white soccer ball.png",
             "subject_pose_style/6/2/style/reference.png",
-            "subject_pose_style/6/2/pose/reference/a_boy_a_man.png"
+            "subject_pose_style/6/2/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 282,
         "category": "subject_pose_style"
@@ -3620,7 +3620,7 @@
             "subject_pose_style/6/3/transfer_subjects/a boy.png",
             "subject_pose_style/6/3/transfer_subjects/a blue surfboard.png",
             "subject_pose_style/6/3/style/reference.png",
-            "subject_pose_style/6/3/pose/reference/a_man.png"
+            "subject_pose_style/6/3/pose/skeleton/a_man.jpg"
         ],
         "index": 283,
         "category": "subject_pose_style"
@@ -3634,7 +3634,7 @@
             "subject_pose_style/6/4/transfer_subjects/a woman.png",
             "subject_pose_style/6/4/transfer_subjects/a blue frisbee.png",
             "subject_pose_style/6/4/style/reference.png",
-            "subject_pose_style/6/4/pose/reference/a_boy_a_man.png"
+            "subject_pose_style/6/4/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 284,
         "category": "subject_pose_style"
@@ -3730,7 +3730,7 @@
             "subject_pose_bg_style/5/1/transfer_subjects/an elderly woman.png",
             "subject_pose_bg_style/5/1/style/reference.png",
             "subject_pose_bg_style/5/1/background/background.png",
-            "subject_pose_bg_style/5/1/pose/reference/a_tall_man.jpeg"
+            "subject_pose_bg_style/5/1/pose/skeleton/a_tall_man.jpg"
         ],
         "index": 291,
         "category": "subject_pose_bg_style"
@@ -3768,7 +3768,7 @@
             "subject_pose_bg_style/5/4/transfer_subjects/a young man.png",
             "subject_pose_bg_style/5/4/transfer_subjects/a woman.png",
             "subject_pose_bg_style/5/4/background/background.png",
-            "subject_pose_bg_style/5/4/pose/reference/a_young_man.png",
+            "subject_pose_bg_style/5/4/pose/skeleton/a_young_man.jpg",
             "subject_pose_bg_style/5/4/style/reference.png"
         ],
         "index": 294,
@@ -3794,7 +3794,7 @@
             "subject_pose_bg_style/5/6/transfer_subjects/an elderly scholar.png",
             "subject_pose_bg_style/5/6/transfer_subjects/a young boy.png",
             "subject_pose_bg_style/5/6/style/reference.png",
-            "subject_pose_bg_style/5/6/pose/reference/an_elderly_scholar.png",
+            "subject_pose_bg_style/5/6/pose/skeleton/an_elderly_scholar.jpg",
             "subject_pose_bg_style/5/6/background/background.png"
         ],
         "index": 296,
@@ -3808,7 +3808,7 @@
             "subject_pose_bg_style/5/7/transfer_subjects/a young woman.png",
             "subject_pose_bg_style/5/7/style/reference.png",
             "subject_pose_bg_style/5/7/background/background.png",
-            "subject_pose_bg_style/5/7/pose/reference/a_bald_man.png"
+            "subject_pose_bg_style/5/7/pose/skeleton/a_bald_man.jpg"
         ],
         "index": 297,
         "category": "subject_pose_bg_style"
@@ -3821,7 +3821,7 @@
             "subject_pose_bg_style/5/8/transfer_subjects/a man.png",
             "subject_pose_bg_style/5/8/background/background.png",
             "subject_pose_bg_style/5/8/style/reference.png",
-            "subject_pose_bg_style/5/8/pose/reference/a_young_boy.png"
+            "subject_pose_bg_style/5/8/pose/skeleton/a_young_boy.jpg"
         ],
         "index": 298,
         "category": "subject_pose_bg_style"
@@ -3848,7 +3848,7 @@
             "subject_pose_bg_style/6/0/transfer_subjects/an orange basketball.png",
             "subject_pose_bg_style/6/0/style/reference.png",
             "subject_pose_bg_style/6/0/background/background.png",
-            "subject_pose_bg_style/6/0/pose/reference/a_tall_man.png"
+            "subject_pose_bg_style/6/0/pose/skeleton/a_tall_man.jpg"
         ],
         "index": 300,
         "category": "subject_pose_bg_style"
@@ -3876,7 +3876,7 @@
             "subject_pose_bg_style/6/2/transfer_subjects/a tennis racket.png",
             "subject_pose_bg_style/6/2/background/background.png",
             "subject_pose_bg_style/6/2/style/reference.png",
-            "subject_pose_bg_style/6/2/pose/reference/a_man.png"
+            "subject_pose_bg_style/6/2/pose/skeleton/a_man.jpg"
         ],
         "index": 302,
         "category": "subject_pose_bg_style"
@@ -3889,7 +3889,7 @@
             "subject_pose_bg_style/6/3/transfer_subjects/a boy.png",
             "subject_pose_bg_style/6/3/transfer_subjects/an elderly man.png",
             "subject_pose_bg_style/6/3/style/reference.png",
-            "subject_pose_bg_style/6/3/pose/reference/an_elderly_man.png",
+            "subject_pose_bg_style/6/3/pose/skeleton/an_elderly_man.jpg",
             "subject_pose_bg_style/6/3/background/background.png"
         ],
         "index": 303,
@@ -3904,7 +3904,7 @@
             "subject_pose_bg_style/6/4/transfer_subjects/a boy.png",
             "subject_pose_bg_style/6/4/style/reference.png",
             "subject_pose_bg_style/6/4/background/background.png",
-            "subject_pose_bg_style/6/4/pose/reference/a_boy.png"
+            "subject_pose_bg_style/6/4/pose/skeleton/a_boy.jpg"
         ],
         "index": 304,
         "category": "subject_pose_bg_style"
@@ -3918,7 +3918,7 @@
             "subject_pose_bg_style/6/5/transfer_subjects/a man.png",
             "subject_pose_bg_style/6/5/style/reference.png",
             "subject_pose_bg_style/6/5/background/background.png",
-            "subject_pose_bg_style/6/5/pose/reference/a_girl.png"
+            "subject_pose_bg_style/6/5/pose/skeleton/a_girl.jpg"
         ],
         "index": 305,
         "category": "subject_pose_bg_style"
@@ -3989,7 +3989,7 @@
             "subject_pose_bg_style/7/0/transfer_subjects/a yellow frisbee.png",
             "subject_pose_bg_style/7/0/background/background.png",
             "subject_pose_bg_style/7/0/style/reference.png",
-            "subject_pose_bg_style/7/0/pose/reference/a_woman.png"
+            "subject_pose_bg_style/7/0/pose/skeleton/a_woman.jpg"
         ],
         "index": 310,
         "category": "subject_pose_bg_style"
@@ -4003,7 +4003,7 @@
             "subject_pose_bg_style/7/1/transfer_subjects/a woman.png",
             "subject_pose_bg_style/7/1/transfer_subjects/an orange basketball.png",
             "subject_pose_bg_style/7/1/background/background.png",
-            "subject_pose_bg_style/7/1/pose/reference/a_boy.png",
+            "subject_pose_bg_style/7/1/pose/skeleton/a_boy.jpg",
             "subject_pose_bg_style/7/1/style/reference.png"
         ],
         "index": 311,
@@ -4017,7 +4017,7 @@
             "subject_pose_bg_style/7/2/transfer_subjects/boy a man diving.png",
             "subject_pose_bg_style/7/2/transfer_subjects/a woman.png",
             "subject_pose_bg_style/7/2/transfer_subjects/a black-and-white soccer ball.png",
-            "subject_pose_bg_style/7/2/pose/reference/a_boy_a_man.png",
+            "subject_pose_bg_style/7/2/pose/skeleton/a_boy_a_man.jpg",
             "subject_pose_bg_style/7/2/style/reference.png",
             "subject_pose_bg_style/7/2/background/background.png"
         ],
@@ -4034,7 +4034,7 @@
             "subject_pose_bg_style/7/3/transfer_subjects/a blue surfboard.png",
             "subject_pose_bg_style/7/3/style/reference.png",
             "subject_pose_bg_style/7/3/background/background.png",
-            "subject_pose_bg_style/7/3/pose/reference/a_man.png"
+            "subject_pose_bg_style/7/3/pose/skeleton/a_man.jpg"
         ],
         "index": 313,
         "category": "subject_pose_bg_style"
@@ -4049,7 +4049,7 @@
             "subject_pose_bg_style/7/4/transfer_subjects/a blue frisbee.png",
             "subject_pose_bg_style/7/4/style/reference.png",
             "subject_pose_bg_style/7/4/background/background.png",
-            "subject_pose_bg_style/7/4/pose/reference/a_boy_a_man.png"
+            "subject_pose_bg_style/7/4/pose/skeleton/a_boy_a_man.jpg"
         ],
         "index": 314,
         "category": "subject_pose_bg_style"
@@ -4669,7 +4669,7 @@
             "subject/6/0/transfer_subjects/a yellow bird.jpg"
         ],
         "prompt": "The man in Image 1 is on the left, the man in Image 2 is in the center, and the birds in Image 3 are flying around the men. The bird in Image 4 is perched on a branch to the right of the men. The bird in Image 5 is perched on a branch above the men. The bird in Image 6 is flying towards a nest on the right side of the image.",
-        "index": 370,
+        "index": 365,
         "category": "subject"
     },
     {
@@ -4682,7 +4682,7 @@
             "subject/6/1/transfer_subjects/a woman.jpg"
         ],
         "prompt": "The adventurer in Image 1 is on the far left, the seagull in Image 2 is to his right, the dog in Image 3 is next, the pink leopard in Image 4 is to the dog's right, and the lion in Image 5 is on the far right. The woman in Image 6 is sitting at a table in the foreground. They are all gathered together.",
-        "index": 371,
+        "index": 366,
         "category": "subject"
     },
     {
@@ -4695,7 +4695,7 @@
             "subject/6/2/transfer_subjects/rainbow pastel colored cat.jpg"
         ],
         "prompt": "The woman in Image 1 is on the far left, the woman in Image 2 is next to her, the man in Image 3 is in the center, the man in Image 4 is to the right of the man in Image 3, the snake in Image 5 is to the right of the man in Image 4, and the cat in Image 6 is on the far right. They are all gathered in a vibrant marketplace.",
-        "index": 372,
+        "index": 367,
         "category": "subject"
     },
     {
@@ -4708,7 +4708,7 @@
             "subject/6/3/transfer_subjects/woman in beige linen jumpsuit.jpg"
         ],
         "prompt": "The alligator from Image 1 is on the left, the lion conductor from Image 2 is in the center, the dragon from Image 3 is on the right, and the dog from Image 4 is in the foreground, all gathered around a large oak table in a dimly lit library with the woman from Image 5 seated at the table, reading a book, and the woman from Image 6 stands watering a plant in the background.",
-        "index": 373,
+        "index": 368,
         "category": "subject"
     },
     {
@@ -4721,20 +4721,7 @@
             "subject/6/4/transfer_subjects/a masked person.jpg"
         ],
         "prompt": "The hummingbird from Image 1 is in the upper left, the green gorilla from Image 2 is in the center, and the pink leopard from Image 3 is in the upper right. The Doberman from Image 4 is in the lower left, the woman from Image 5 is in the lower center, and the person spraying graffiti from Image 6 is in the lower right. They are all looking at each other.",
-        "index": 374,
-        "category": "subject"
-    },
-    {
-        "edit_image": [
-            "subject/6/5/transfer_subjects/woman with clown face paint.jpg",
-            "subject/6/5/transfer_subjects/man in dark business suit.jpg",
-            "subject/6/5/transfer_subjects/man wearing headlamp and beanie.jpg",
-            "subject/6/5/transfer_subjects/large brown tortoise.jpg",
-            "subject/6/5/transfer_subjects/man in yellow hooded raincoat.jpg",
-            "subject/6/5/transfer_subjects/large green alligator.jpg"
-        ],
-        "prompt": "The clown woman from Image 1 is on the left, the businessman from Image 2 is in the center, the explorer from Image 3 is in the middle right, the turtle from Image 4 is in the foreground, the sailor from Image 5 is in the background, and the alligator from Image 6 is on the far right. They are all in a library, reading books.",
-        "index": 375,
+        "index": 369,
         "category": "subject"
     },
     {
@@ -4748,7 +4735,7 @@
             "subject_bg/7/0/background/background.jpg"
         ],
         "prompt": "The man from image 1, the woman from image 2, the fisherman from image 3, the woman in red from image 4, the man in the apron from image 5, and the man from image 6 are arranged within the interior of an abandoned ornate building with a grand staircase, as depicted in image 7.",
-        "index": 390,
+        "index": 370,
         "category": "subject_bg"
     },
     {
@@ -4762,7 +4749,7 @@
             "subject_bg/7/1/background/background.jpg"
         ],
         "prompt": "The woman from image 1, the man from image 2, the man from image 3, the woman from image 4, the man from image 5, and the man from image 6 are placed in front of a temple with stupas. The background of the image is the same as in image 7.",
-        "index": 391,
+        "index": 371,
         "category": "subject_bg"
     },
     {
@@ -4776,7 +4763,7 @@
             "subject_bg/7/2/background/background.jpg"
         ],
         "prompt": "The man from image 1, the man from image 2, the girl and the dog from image 3, the woman from image 4, the man from image 5, and the man from image 6 are all standing on the railroad tracks in the snow with the sunset in the background, all as seen in image 7.",
-        "index": 392,
+        "index": 372,
         "category": "subject_bg"
     },
     {
@@ -4790,7 +4777,7 @@
             "subject_bg/7/3/background/background.jpg"
         ],
         "prompt": "The man from image 1, the man from image 2, the man from image 3, the man from image 4, the woman from image 5, and the man from image 6 are arranged in a group in front of a Tuscan landscape. The background of the image is the same as in image 7.",
-        "index": 393,
+        "index": 373,
         "category": "subject_bg"
     },
     {
@@ -4804,7 +4791,7 @@
             "subject_bg/7/4/background/background.jpg"
         ],
         "prompt": "The man from image 1, the woman from image 2, the woman from image 3, the person from image 4, the man from image 5, and the man from image 6 are arranged in a composition in front of the landscape shown in image 7.",
-        "index": 394,
+        "index": 374,
         "category": "subject_bg"
     },
     {
@@ -4813,7 +4800,7 @@
             "subject_bg/2/0/transfer_subjects/large red heart sculpture.jpg"
         ],
         "prompt": "Replace the background of Image 2 with Image 1.",
-        "index": 400,
+        "index": 375,
         "category": "subject_bg"
     },
     {
@@ -4822,7 +4809,7 @@
             "subject_bg/2/1/transfer_subjects/a woman.jpg"
         ],
         "prompt": "Replace the background of Image 2 with Image 1.",
-        "index": 401,
+        "index": 376,
         "category": "subject_bg"
     },
     {
@@ -4831,7 +4818,7 @@
             "subject_bg/2/2/transfer_subjects/a girl.jpg"
         ],
         "prompt": "Replace the background of Image 2 with Image 1.",
-        "index": 402,
+        "index": 377,
         "category": "subject_bg"
     },
     {
@@ -4840,7 +4827,7 @@
             "subject_bg/2/3/transfer_subjects/a blonde warrior woman.jpg"
         ],
         "prompt": "Replace the background of Image 2 with Image 1.",
-        "index": 403,
+        "index": 378,
         "category": "subject_bg"
     },
     {
@@ -4849,7 +4836,7 @@
             "subject_bg/2/4/transfer_subjects/a woman.jpg"
         ],
         "prompt": "Replace the background of Image 2 with Image 1.",
-        "index": 404,
+        "index": 379,
         "category": "subject_bg"
     },
     {
@@ -4863,7 +4850,7 @@
             "subject_style/7/0/style/reference.jpg"
         ],
         "prompt": "The man from image 1, the polar bear and two penguins from image 2, the man from image 3, the man from image 4, the man from image 5, and the woman from image 6 are in a surreal city at night with red lanterns and boats on the water, in the style of image 7.",
-        "index": 410,
+        "index": 380,
         "category": "subject_style"
     },
     {
@@ -4877,7 +4864,7 @@
             "subject_style/7/1/style/reference.jpg"
         ],
         "prompt": "The woman from image 1, the macaron tower from image 2, the armchair from image 3, the laughing man from image 4, the boat from image 5, and the man in festive attire from image 6 are arranged in a surreal landscape. The style of the image is the same as in image 7.",
-        "index": 411,
+        "index": 381,
         "category": "subject_style"
     },
     {
@@ -4891,7 +4878,7 @@
             "subject_style/7/2/style/reference.jpg"
         ],
         "prompt": "Extract the man from image 1, the man from image 2, the woman from image 3, the man from image 4, the woman from image 5, and the owl from image 6. Arrange them in a composition resembling the scene in image 7, with the owl perched on a stick in the foreground and the people in the background. The style of the composite image should match the painting style of image 7.",
-        "index": 412,
+        "index": 382,
         "category": "subject_style"
     },
     {
@@ -4905,7 +4892,7 @@
             "subject_style/7/3/style/reference.jpg"
         ],
         "prompt": "The character from image 1, the coffee beans and spoons from image 2, the potions from image 3, the woman from image 4, the woman from image 5, and the woman in the leaf dress from image 6 are arranged around a stylized clock similar to image 7. The style of the image is the same as in image 7.",
-        "index": 413,
+        "index": 383,
         "category": "subject_style"
     },
     {
@@ -4919,7 +4906,7 @@
             "subject_style/7/4/style/reference.jpg"
         ],
         "prompt": "The woman from image 1 holding a flag and skis, the man from image 2 in a plaid jacket, the man from image 3 with makeup, the man from image 4 with long hair, and the woman from image 5 reading a book are gathered in the stylized world of image 7, with the man from image 6 standing in the background. The style of the image is the same as in image 7.",
-        "index": 414,
+        "index": 384,
         "category": "subject_style"
     },
     {
@@ -4928,7 +4915,7 @@
             "subject_style/2/0/transfer_subjects/red armor.jpg"
         ],
         "prompt": "Change the style of Image 2 to the style of Image 1.",
-        "index": 420,
+        "index": 385,
         "category": "subject_style"
     },
     {
@@ -4937,7 +4924,7 @@
             "subject_style/2/1/transfer_subjects/a man.jpg"
         ],
         "prompt": "Change the style of Image 2 to the style of Image 1.",
-        "index": 421,
+        "index": 386,
         "category": "subject_style"
     },
     {
@@ -4946,7 +4933,7 @@
             "subject_style/2/2/transfer_subjects/woman in brown apron.jpg"
         ],
         "prompt": "Change the style of Image 2 to the style of Image 1",
-        "index": 422,
+        "index": 387,
         "category": "subject_style"
     },
     {
@@ -4955,7 +4942,7 @@
             "subject_style/2/3/transfer_subjects/a man.jpg"
         ],
         "prompt": "Change the style of Image 2 to the style of Image 1",
-        "index": 423,
+        "index": 388,
         "category": "subject_style"
     },
     {
@@ -4964,52 +4951,52 @@
             "subject_style/2/4/transfer_subjects/man in blue t-shirt.jpg"
         ],
         "prompt": "Change the style of Image 2 to the style of Image 1",
-        "index": 424,
+        "index": 389,
         "category": "subject_style"
     },
     {
         "edit_image": [
             "subject_pose/2/0/transfer_subjects/woman in green floral kimono.jpg",
-            "subject_pose/2/0/pose/reference/woman_in_green_floral_kimono.jpg"
+            "subject_pose/2/0/pose/reference/woman_in_green_floral_kimono_skeleton.jpg"
         ],
         "prompt": "Change the pose of the person in Image 1 to match the pose in Image 2.",
-        "index": 430,
+        "index": 390,
         "category": "subject_pose"
     },
     {
         "edit_image": [
             "subject_pose/2/1/transfer_subjects/geisha with white face makeup.jpg",
-            "subject_pose/2/1/pose/reference/geisha_with_white_face_makeup.jpg"
+            "subject_pose/2/1/pose/reference/geisha_with_white_face_makeup_skeleton.jpg"
         ],
         "prompt": "Change the pose of the person in Image 1 to match the pose in Image 2.",
-        "index": 431,
+        "index": 391,
         "category": "subject_pose"
     },
     {
         "edit_image": [
             "subject_pose/2/2/transfer_subjects/woman in white shirt and red skirt.jpg",
-            "subject_pose/2/2/pose/reference/woman_in_white_shirt_and_red_skirt.jpg"
+            "subject_pose/2/2/pose/reference/woman_in_white_shirt_and_red_skirt_skeleton.jpg"
         ],
         "prompt": "Change the pose of the person in Image 1 to match the pose in Image 2.",
-        "index": 432,
+        "index": 392,
         "category": "subject_pose"
     },
     {
         "edit_image": [
             "subject_pose/2/3/transfer_subjects/a sad clown.jpg",
-            "subject_pose/2/3/pose/reference/a_sad_clown.jpg"
+            "subject_pose/2/3/pose/reference/a_sad_clown_skeleton.jpg"
         ],
         "prompt": "Change the pose of the person in Image 1 to match the pose in Image 2.",
-        "index": 433,
+        "index": 393,
         "category": "subject_pose"
     },
     {
         "edit_image": [
             "subject_pose/2/4/transfer_subjects/a woman.jpg",
-            "subject_pose/2/4/pose/reference/a_woman.jpg"
+            "subject_pose/2/4/pose/reference/a_woman_skeleton.jpg"
         ],
         "prompt": "Change the pose of the person in Image 1 to match the pose in Image 2.",
-        "index": 434,
+        "index": 394,
         "category": "subject_pose"
     }
 ]

@@ -49,17 +49,16 @@ OmniRef-Bench/
 ├── MLLM_eval/                  # MLLM-based holistic evaluation
 │   ├── mllm_eval.py
 │   └── vlm_utils.py
-├── metadata/                  # information for training and test data
-│   ├── data_our_multibanana_mixture_pose.json        # test data version 1
-│   ├── data_our_multibanana_skeleton.json            # test data version 2
-│   └── train_data.json
+├── metadata/                  # information for training and benchmark data
+│   ├── benchmark.json         # unified benchmark metadata for evaluation
+│   └── train_data.json        # training metadata
 ├── eval_suite.sh               # One-click full evaluation script
 └── eval_script.sh              # Example evaluation command
 ```
 ---
 
 ## 🗂️ Benchmark
-The benchmark contains **395 samples** across multiple task categories:
+The benchmark uses `metadata/benchmark.json` as the unified evaluation metadata file and contains **395 samples** across multiple task categories:
 
 - `subject` — subject fidelity only
 - `subject + style` — subject with style transfer
@@ -81,34 +80,40 @@ Each sample in the JSON metadata contains:
 }
 ```
 
+Pass `metadata/benchmark.json` to all evaluation commands that require `--json_data_path` or `--metadata_file`.
+
 ---
 
 ## ⚙️ Environment Setup
 
-The benchmark requires **3 separate conda environments** due to dependency conflicts. We recommend following the official installation guides for each component to ensure CUDA extensions are correctly compiled.:
+The benchmark requires **3 separate conda environments** due to dependency conflicts. We recommend cloning the three official repositories into the `DyRef/benchmark` directory first, then following each official installation guide to set up the corresponding environment and CUDA extensions.
+
+From the `DyRef/benchmark` directory:
+```bash
+git clone https://github.com/IDEA-Research/Grounded-SAM-2.git
+git clone https://github.com/learn2phoenix/CSD.git
+git clone https://github.com/MVIG-SJTU/AlphaPose.git
+```
 
 ### 1. Grounded-SAM-2 (Subject + Background + Pose)
-1. Please follow the installation guide: [Grounded-SAM-2](https://github.com/IDEA-Research/Grounded-SAM-2)
-2. Apply patch:
+1. Please follow the installation guide in the cloned `Grounded-SAM-2/` repository: [Grounded-SAM-2](https://github.com/IDEA-Research/Grounded-SAM-2)
+2. Apply patch from the `DyRef/benchmark` directory:
 ```bash
-# Copy our evaluation scripts to the official Grounded-SAM-2 directory
-cp -r Grounded-SAM-2_patch/* /path/to/your/Grounded-SAM-2/
+cp -r Grounded-SAM-2_patch/* Grounded-SAM-2/
 ```
 
 ### 2. CSD (Style + Lighting)
-1. Please follow the installation guide: [CSD](https://github.com/learn2phoenix/CSD/tree/main)
-2. Apply patch:
+1. Please follow the installation guide in the cloned `CSD/` repository: [CSD](https://github.com/learn2phoenix/CSD/tree/main)
+2. Apply patch from the `DyRef/benchmark` directory:
 ```bash
-# Copy our style & lighting evaluation scripts to the CSD directory
-cp -r CSD_patch/* /path/to/your/CSD/
+cp -r CSD_patch/* CSD/
 ```
 
 ### 3. AlphaPose (Pose Skeleton)
-1. Please follow the installation guide: [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose)
-2. Apply patch:
+1. Please follow the installation guide in the cloned `AlphaPose/` repository: [AlphaPose](https://github.com/MVIG-SJTU/AlphaPose)
+2. Apply patch from the `DyRef/benchmark` directory:
 ```bash
-# Copy our pose skeleton scripts to the AlphaPose directory
-cp -r AlphaPose_patch/* /path/to/your/AlphaPose/
+cp -r AlphaPose_patch/* AlphaPose/
 ```
 
 ### 4. MLLM Eval (VLM Scoring)
@@ -128,7 +133,7 @@ bash eval_suite.sh \
   /path/to/generated_images \
   /path/to/output_dir \
   /path/to/test_set \
-  /path/to/test_set.json
+  /path/to/benchmark/metadata/benchmark.json
 ```
 
 This script sequentially runs all 6 evaluation tasks and saves results to `output_dir/`.
@@ -143,7 +148,7 @@ python subject_fidelity_eval.py \
   --img_path /path/to/generated_images \
   --output_path /path/to/output \
   --test_set_path /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### Style Consistency
@@ -154,7 +159,7 @@ python csd_eval_batch.py \
   --image_dir /path/to/generated_images \
   --output_path /path/to/output \
   --reference_dir /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### Lighting Consistency
@@ -163,7 +168,7 @@ python lighting_consistency_eval.py \
   --img_path /path/to/generated_images \
   --output_path /path/to/output \
   --reference_base_path /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### Pose Consistency
@@ -177,7 +182,7 @@ python scripts/pose_consistency_eval.py \
   --indir /path/to/generated_pose_images \
   --output_path /path/to/output \
   --reference_dir /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 #### 📊 Output Format
@@ -206,7 +211,7 @@ python mllm_eval.py \
   --gen_image_dir /path/to/generated_images \
   --output_file /path/to/output/vlm_results.jsonl \
   --test_set_dir /path/to/test_set \
-  --metadata_file /path/to/test_set.json \
+  --metadata_file /path/to/benchmark/metadata/benchmark.json \
   --base_url https://your-api-endpoint
 ```
 

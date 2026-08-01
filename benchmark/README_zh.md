@@ -49,17 +49,16 @@ OmniRef-Bench/
 ├── MLLM_eval/                  # 基于 MLLM 的整体评估
 │   ├── mllm_eval.py
 │   └── vlm_utils.py
-├── metadata/                  # 训练数据和测评数据相关信息
-│   ├── data_our_multibanana_mixture_pose.json        # 测评数据版本1
-│   ├── data_our_multibanana_skeleton.json            # 测评数据版本2
-│   └── train_data.json
+├── metadata/                  # 训练数据和基准测评数据相关信息
+│   ├── benchmark.json         # 统一的基准测评元数据
+│   └── train_data.json        # 训练数据元数据
 ├── eval_suite.sh               # 一键完整评估脚本
 └── eval_script.sh              # 示例评估命令
 ```
 ---
 
 ## 🗂️ 基准测试数据
-该基准测试包含 395 个样本，覆盖多个任务类别：
+该基准测试统一使用 `metadata/benchmark.json` 作为测评元数据文件，包含 395 个样本，覆盖多个任务类别：
 - `subject` —— 仅主体保真度
 - `subject + style` —— 主体与风格迁移
 - `subject + bg` —— 主体与背景替换
@@ -79,32 +78,38 @@ OmniRef-Bench/
   ]
 }
 ```
+所有需要 `--json_data_path` 或 `--metadata_file` 的评测命令都应传入 `metadata/benchmark.json`。
 ---
 
 ## ⚙️ 环境配置
-由于依赖冲突，该基准需要 3 个独立的 conda 环境。建议按照各组件官方安装指南进行配置，以确保 CUDA 扩展能够正确编译。
-### 1. Grounded-SAM-2 （主体 + 背景 + 姿态）
-1. 请参考安装指南：[Grounded-SAM-2](https://github.com/IDEA-Research/Grounded-SAM-2)
-2. 应用补丁：
+由于依赖冲突，该基准需要 3 个独立的 conda 环境。建议先将 3 个官方仓库 clone 到 `DyRef/benchmark` 目录下，再分别按照各组件官方安装指南配置环境，以确保 CUDA 扩展能够正确编译。
+
+在 `DyRef/benchmark` 目录下执行：
 ```bash
-# 将我们的评估脚本复制到官方 Grounded-SAM-2 目录
-cp -r Grounded-SAM-2_patch/* /path/to/your/Grounded-SAM-2/
+git clone https://github.com/IDEA-Research/Grounded-SAM-2.git
+git clone https://github.com/learn2phoenix/CSD.git
+git clone https://github.com/MVIG-SJTU/AlphaPose.git
+```
+
+### 1. Grounded-SAM-2 （主体 + 背景 + 姿态）
+1. 请参考已 clone 的 `Grounded-SAM-2/` 仓库中的安装指南：[Grounded-SAM-2](https://github.com/IDEA-Research/Grounded-SAM-2)
+2. 在 `DyRef/benchmark` 目录下应用补丁：
+```bash
+cp -r Grounded-SAM-2_patch/* Grounded-SAM-2/
 ```
 
 ### 2. CSD (风格 + 光影)
-1. 请参考安装指南：[CSD](https://github.com/learn2phoenix/CSD/tree/main)
-2. 应用补丁：
+1. 请参考已 clone 的 `CSD/` 仓库中的安装指南：[CSD](https://github.com/learn2phoenix/CSD/tree/main)
+2. 在 `DyRef/benchmark` 目录下应用补丁：
 ```bash
-# 将风格与光照评估脚本复制到 CSD 目录
-cp -r CSD_patch/* /path/to/your/CSD/
+cp -r CSD_patch/* CSD/
 ```
 
 ### 3. AlphaPose (姿态骨架)
-1. 请参考安装指南：[AlphaPose](https://github.com/MVIG-SJTU/AlphaPose)
-2. 应用补丁：
+1. 请参考已 clone 的 `AlphaPose/` 仓库中的安装指南：[AlphaPose](https://github.com/MVIG-SJTU/AlphaPose)
+2. 在 `DyRef/benchmark` 目录下应用补丁：
 ```bash
-# 将姿态骨架相关脚本复制到 AlphaPose 目录
-cp -r AlphaPose_patch/* /path/to/your/AlphaPose/
+cp -r AlphaPose_patch/* AlphaPose/
 ```
 
 ### 4. MLLM Eval (VLM 评分)
@@ -122,7 +127,7 @@ bash eval_suite.sh \
   /path/to/generated_images \
   /path/to/output_dir \
   /path/to/test_set \
-  /path/to/test_set.json
+  /path/to/benchmark/metadata/benchmark.json
 ```
 该脚本会顺序运行全部 6 项评估任务，并将结果保存至 `output_dir/`.
 
@@ -136,7 +141,7 @@ python subject_fidelity_eval.py \
   --img_path /path/to/generated_images \
   --output_path /path/to/output \
   --test_set_path /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### 风格一致性
@@ -147,7 +152,7 @@ python csd_eval_batch.py \
   --image_dir /path/to/generated_images \
   --output_path /path/to/output \
   --reference_dir /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### 光影一致性
@@ -156,7 +161,7 @@ python lighting_consistency_eval.py \
   --img_path /path/to/generated_images \
   --output_path /path/to/output \
   --reference_base_path /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 ##### 姿态一致性
@@ -170,7 +175,7 @@ python scripts/pose_consistency_eval.py \
   --indir /path/to/generated_pose_images \
   --output_path /path/to/output \
   --reference_dir /path/to/test_set \
-  --json_data_path /path/to/test_set.json
+  --json_data_path /path/to/benchmark/metadata/benchmark.json
 ```
 
 #### 📊 输出格式
@@ -199,7 +204,7 @@ python mllm_eval.py \
   --gen_image_dir /path/to/generated_images \
   --output_file /path/to/output/vlm_results.jsonl \
   --test_set_dir /path/to/test_set \
-  --metadata_file /path/to/test_set.json \
+  --metadata_file /path/to/benchmark/metadata/benchmark.json \
   --base_url https://your-api-endpoint
 ```
 

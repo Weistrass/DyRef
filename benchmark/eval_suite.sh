@@ -60,6 +60,7 @@ python scripts/pose_consistency_eval.py \
     --indir "$GEN_POSE_DIR" \
     --output_path "$OUTPUT_PATH" \
     --reference_dir "$TEST_SET_PATH" \
+    --json_data_path "$TEST_SET_JSON_PATH"
 
 echo "---------------------------------------"
 echo "所有评测任务已完成！"

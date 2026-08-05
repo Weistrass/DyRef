@@ -69,6 +69,8 @@ https://github.com/user-attachments/assets/cffc168a-a785-47be-baf2-4ef504ae9f22
 
 3. DyRef consistently enhances open-source models, including Qwen-Image-Edit-2511 and FLUX.2-klein-base, on MRIG benchmarks (**OmniRef-Bench**, **MultiBanana**, and **OmniContext**) while also improving single-image editing performance on **ImgEdit** and **DreamBench++**, without compromising the foundation models' other capabilities.
 
+In addition, using our proposed automated data construction pipeline, we evaluated the model using training datasets containing approximately 5K, 7.5K, and 14K samples. We observed consistent performance gains as the training dataset size increased, with no clear evidence of performance saturation. However, due to limited computational resources, we did not evaluate larger training datasets.
+
 ## 🖼️Results Gallery
 In this part, we present qualitative comparisons between our method and existing approaches across various combinations of reference types. The prompts shown in the figures are abbreviated versions for visualization purposes and are not the actual prompts used during inference. In addition, we use color to indicate the attributes specified in the user prompt and their corresponding reference images.
 

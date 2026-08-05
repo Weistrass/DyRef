@@ -12,7 +12,7 @@ Wenwang Huang<sup>1,\*</sup>, Yusen Fu<sup>1,\*</sup>, Junjie Wang<sup>1</sup>, 
 [![ECCV](https://img.shields.io/badge/ECCV-2026-8bc34a?style=flat&labelColor=555555)](https://eccv.ecva.net/)
 [![Paper](https://img.shields.io/badge/Paper-arXiv-b23a2f?style=flat&labelColor=555555)](https://arxiv.org/abs/2606.26947)
 [![License](https://img.shields.io/badge/License-Apache%202.0-d4b31a?style=flat&labelColor=555555)](LICENSE)
-[![Project](https://img.shields.io/badge/Project-Page-63b32e?style=flat&labelColor=555555)](#results-gallery)
+[![Project](https://img.shields.io/badge/Project-Page-63b32e?style=flat&labelColor=555555)](https://weistrass.github.io/Projects/DyRef/)
 [![Benchmark](https://img.shields.io/badge/Benchmark-OmniRef--Bench-c0362c?style=flat&labelColor=555555)](https://huggingface.co/datasets/Eason0438/OmniRef-Bench)
 [![Dataset](https://img.shields.io/badge/Dataset-Training-3f3f3f?style=flat&labelColor=555555)](https://huggingface.co/datasets/Eason0438/OmniRef-training)
 [![Model](https://img.shields.io/badge/Model-Weights-4c1?style=flat&labelColor=555555)](https://huggingface.co/Weistrass/Qwen-Image-Edit-2511-DyRef)
@@ -52,8 +52,8 @@ https://github.com/user-attachments/assets/cffc168a-a785-47be-baf2-4ef504ae9f22
 - [x] Release the training data used in our work.
 - [x] Open-source OmniRef-Bench, our proposed benchmark.
 - [x] Release the model weights trained by our method.
-- [ ] Improve code efficiency and structure.
-- [ ] Release the project page
+- [x] Improve code efficiency and structure.
+- [x] Release the project page
 
 ## ✨Highlights
 
